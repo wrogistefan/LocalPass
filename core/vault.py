@@ -2,6 +2,7 @@ class Vault:
     def __init__(self):
         self.entries = []
 
+
     def add_entry(self, name: str, username: str, password: str):
         entry = {
             "name": name,
