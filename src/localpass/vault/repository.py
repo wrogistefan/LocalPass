@@ -131,9 +131,29 @@ class EncryptedVaultRepository:
             raise ValueError(f"Invalid JSON in decrypted vault data: {exc}")
 
         try:
-            metadata = VaultMetadata(**obj["metadata"])
-            entries = [VaultEntry(**e) for e in obj["entries"]]
+            metadata_dict = obj["metadata"]
+            metadata = VaultMetadata(
+                version=metadata_dict["version"],
+                created_at=datetime.fromisoformat(metadata_dict["created_at"]),
+                updated_at=datetime.fromisoformat(metadata_dict["updated_at"]),
+            )
+            entries = []
+            for e in obj["entries"]:
+                entries.append(
+                    VaultEntry(
+                        id=e["id"],
+                        service=e["service"],
+                        username=e["username"],
+                        password=e["password"],
+                        notes=e.get("notes"),
+                        tags=e["tags"],
+                        created_at=datetime.fromisoformat(e["created_at"]),
+                        updated_at=datetime.fromisoformat(e["updated_at"]),
+                    )
+                )
         except KeyError as exc:
             raise ValueError(f"Missing required field in vault data: {exc}")
+        except ValueError as exc:
+            raise ValueError(f"Invalid data format in vault file {path}: {exc}")
 
         return Vault(metadata=metadata, entries=entries)
