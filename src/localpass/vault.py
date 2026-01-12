@@ -7,7 +7,8 @@ class Vault:
         self.entries.append(entry)
 
     def list_entries(self) -> list[dict[str, str]]:
-        return self.entries
+        # Return a shallow copy to avoid exposing internal mutable state
+        return list(self.entries)
 
     def remove_entry(self, name: str) -> None:
         self.entries = [e for e in self.entries if e["name"] != name]
