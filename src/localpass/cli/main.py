@@ -1,6 +1,6 @@
 import argparse
 
-from localpass.vault import Vault
+from localpass.vault.models import Vault, VaultEntry, VaultMetadata
 
 
 def main() -> None:
@@ -9,7 +9,7 @@ def main() -> None:
 
     # Add command
     add_parser = subparsers.add_parser("add", help="Add a new entry")
-    add_parser.add_argument("--name", required=True, help="Entry name")
+    add_parser.add_argument("--service", required=True, help="Service name")
     add_parser.add_argument("--username", required=True, help="Username")
     add_parser.add_argument("--password", required=True, help="Password")
 
@@ -18,7 +18,7 @@ def main() -> None:
 
     # Remove command
     remove_parser = subparsers.add_parser("remove", help="Remove an entry")
-    remove_parser.add_argument("--name", required=True, help="Entry name")
+    remove_parser.add_argument("--service", required=True, help="Service name")
 
     args = parser.parse_args()
 
@@ -26,20 +26,20 @@ def main() -> None:
         parser.print_help()
         return
 
-    vault = Vault()
+    vault = Vault(metadata=VaultMetadata())
 
     if args.command == "add":
-        vault.add_entry(args.name, args.username, args.password)
-        print(f"Added entry: {args.name}")
+        vault.add_entry(VaultEntry.create(args.service, args.username, args.password))
+        print(f"Added entry: {args.service}")
 
     elif args.command == "list":
         entries = vault.list_entries()
         for entry in entries:
-            print(f"Name: {entry['name']}, Username: {entry['username']}")
+            print(f"Service: {entry.service}, Username: {entry.username}")
 
     elif args.command == "remove":
-        vault.remove_entry(args.name)
-        print(f"Removed entry: {args.name}")
+        vault.remove_entry(args.service)
+        print(f"Removed entry: {args.service}")
 
 
 if __name__ == "__main__":

@@ -1,13 +1,12 @@
-from localpass.vault import Vault
+from localpass.vault import Vault, VaultEntry, VaultMetadata
 
 
 def test_add_entry() -> None:
-    vault = Vault()
-    vault.add_entry("gmail", "lukasz", "secret123")
+    vault = Vault(metadata=VaultMetadata())
+    entry = VaultEntry.create("gmail", "lukasz", "secret123")
+    vault.add_entry(entry)
 
-    entries = vault.list_entries()
-
-    assert len(entries) == 1
-    assert entries[0]["name"] == "gmail"
-    assert entries[0]["username"] == "lukasz"
-    assert entries[0]["password"] == "secret123"
+    assert len(vault.entries) == 1
+    assert vault.entries[0].service == "gmail"
+    assert vault.entries[0].username == "lukasz"
+    assert vault.entries[0].password == "secret123"
