@@ -10,7 +10,9 @@ authors = [{name = "Łukasz Perek, lukasz.perek@outlook.com"}]
 license = {text = "Apache-2.0"}
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "cryptography"
+]
 
 [project.scripts]
 localpass = "localpass.cli.main:main"

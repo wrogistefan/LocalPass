@@ -1,4 +1,4 @@
 from .models import Vault, VaultEntry, VaultMetadata
-from .repository import VaultRepository
+from .repository import PlaintextVaultRepository, EncryptedVaultRepository
 
-__all__ = ["Vault", "VaultEntry", "VaultMetadata", "VaultRepository"]
+__all__ = ["Vault", "VaultEntry", "VaultMetadata", "PlaintextVaultRepository", "EncryptedVaultRepository"]
