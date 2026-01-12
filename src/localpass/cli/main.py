@@ -1,10 +1,13 @@
 import argparse
+
 from localpass.vault import Vault
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="LocalPass CLI")
-    parser.add_argument("command", choices=["add", "list", "remove"], help="Command to execute")
+    parser.add_argument(
+        "command", choices=["add", "list", "remove"], help="Command to execute"
+    )
     parser.add_argument("--name", help="Entry name")
     parser.add_argument("--username", help="Username")
     parser.add_argument("--password", help="Password")

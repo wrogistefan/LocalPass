@@ -16,7 +16,28 @@ dependencies = []
 localpass = "localpass.cli.main:main"
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = [
+    "pytest",
+    "ruff",
+    "black",
+    "mypy",
+]
 
 [tool.pytest.ini_options]
 pythonpath = "src"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+extend-select = ["I"]  # import sorting
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+mypy_path = "src"
+
