@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "localpass"
+version = "0.1.0"
+description = "Local-first, offline password manager."
+authors = [{name = "Łukasz Perek, lukasz.perek@outlook.com"}]
+license = {text = "Apache-2.0"}
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+localpass = "localpass.cli.main:main"
