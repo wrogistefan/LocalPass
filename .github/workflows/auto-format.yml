@@ -8,7 +8,8 @@ jobs:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # potrzebne do push
+      contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,6 +26,8 @@ jobs:
         with:
           path: ~/.cache/pip
           key: ubuntu-pip-3.11-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ubuntu-pip-
 
       - name: Install package
         run: pip install .[dev]
