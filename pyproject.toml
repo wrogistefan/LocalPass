@@ -29,6 +29,8 @@ pythonpath = "src"
 [tool.ruff]
 line-length = 88
 target-version = "py311"
+
+[tool.ruff.lint]
 extend-select = ["I"]  # import sorting
 
 [tool.black]
