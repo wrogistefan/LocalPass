@@ -1,7 +1,7 @@
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional, List
-import uuid
+from typing import List, Optional
 
 
 @dataclass

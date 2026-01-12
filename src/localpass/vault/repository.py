@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
-from .models import Vault, VaultMetadata, VaultEntry
+
+from .models import Vault, VaultEntry, VaultMetadata
 
 
 class VaultRepository:
