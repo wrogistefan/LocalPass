@@ -21,6 +21,7 @@ dev = [
     "ruff",
     "black",
     "mypy",
+    "pytest-cov"
 ]
 
 [tool.pytest.ini_options]
