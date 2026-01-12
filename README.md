@@ -1,5 +1,7 @@
 # LocalPass
 
+[![codecov](https://codecov.io/gh/lukas/LocalPass/branch/main/graph/badge.svg)](https://codecov.io/gh/lukas/LocalPass)
+
 LocalPass is a minimal, offline password manager designed for local-first usage. It stores your vault exclusively on your device, with no cloud integration, telemetry, or user accounts. The project emphasizes transparency, simplicity, and security through open-source development.
 
 ## Security Notice
