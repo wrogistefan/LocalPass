@@ -1,17 +1,18 @@
 name: Auto Format
 
 on:
-  pull_request_target:
+  pull_request:
 
 jobs:
   format:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # potrzebne do push
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.head_ref }}
 
       - name: Set up Python
@@ -23,7 +24,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ubuntu-pip-3.11
+          key: ubuntu-pip-3.11-${{ hashFiles('pyproject.toml') }}
 
       - name: Install package
         run: pip install .[dev]
@@ -32,16 +33,14 @@ jobs:
         run: black .
 
       - name: Run ruff fix
-        run: ruff check --fix .
+        run: ruff check . --fix
 
       - name: Check for changes
         id: check_changes
         run: |
           if git diff --quiet; then
-            echo "No changes"
             echo "changed=false" >> $GITHUB_OUTPUT
           else
-            echo "Changes detected"
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
@@ -52,4 +51,4 @@ jobs:
           git config --local user.name "GitHub Action"
           git add .
           git commit -m "Auto-format via CI"
-          git push
+          git push origin HEAD:${{ github.head_ref }}

@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="0.173" timestamp="2026-01-12T21:50:45.498361+01:00" hostname="Anihilator"><testcase classname="tests.test_vault" name="test_add_entry" time="0.002" /></testsuite></testsuites>

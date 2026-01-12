@@ -12,34 +12,28 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.11", "3.12", "3.13"]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Get pip cache dir
         run: echo "PIP_CACHE_DIR=$(pip cache dir)" >> $GITHUB_ENV
 
-      - name: Cache pip
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: ${{ env.PIP_CACHE_DIR }}
           key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install package
-        run: pip install .[dev]
+      - run: pip install .[dev]
 
-      - name: Run ruff check
-        run: ruff check .
-
-      - name: Run black check
-        run: black --check .
+      - run: ruff check .
+      - run: black --check .
 
   typecheck:
     runs-on: ${{ matrix.os }}
@@ -47,31 +41,27 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.11", "3.12", "3.13"]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Get pip cache dir
         run: echo "PIP_CACHE_DIR=$(pip cache dir)" >> $GITHUB_ENV
 
-      - name: Cache pip
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: ${{ env.PIP_CACHE_DIR }}
           key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install package
-        run: pip install .[dev]
+      - run: pip install .[dev]
 
-      - name: Run mypy
-        run: mypy src/localpass
+      - run: mypy src/localpass
 
   tests:
     runs-on: ${{ matrix.os }}
@@ -79,36 +69,33 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.11", "3.12", "3.13"]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Get pip cache dir
         run: echo "PIP_CACHE_DIR=$(pip cache dir)" >> $GITHUB_ENV
 
-      - name: Cache pip
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: ${{ env.PIP_CACHE_DIR }}
           key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install package
-        run: pip install .[dev]
+      - run: pip install .[dev]
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: pytest --cov=src/localpass --cov-report=xml --cov-report=term --junitxml=pytest-results.xml
 
-      - name: Upload coverage
+      - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coverage
+          name: coverage-${{ matrix.os }}-${{ matrix.python-version }}
           path: coverage.xml
 
       - name: Upload test results
@@ -121,16 +108,19 @@ jobs:
     name: Upload coverage to Codecov
     runs-on: ubuntu-latest
     needs: tests
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Download coverage artifact
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all coverage artifacts
         uses: actions/download-artifact@v4
         with:
-          name: coverage
+          pattern: coverage-*
+          path: coverage-reports
 
       - name: Upload to Codecov
         uses: codecov/codecov-action@v4
         with:
-          files: coverage.xml
+          directory: coverage-reports
