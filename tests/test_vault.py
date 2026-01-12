@@ -1,7 +1,7 @@
-import pytest
 from localpass.vault import Vault
 
-def test_add_entry():
+
+def test_add_entry() -> None:
     vault = Vault()
     vault.add_entry("gmail", "lukasz", "secret123")
 
