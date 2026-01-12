@@ -33,6 +33,14 @@ LocalPass adheres to the "local-first" philosophy, prioritizing user control, pr
 - [ ] Conduct security audit.
 - [ ] Release stable version.
 
+## Development
+
+To set up pre-commit hooks for code quality:
+
+```bash
+pre-commit install
+```
+
 ## Project Status
 
 This project is in early development. Core functionality is not yet implemented. Contributions are welcome, but please review the security notice above.
