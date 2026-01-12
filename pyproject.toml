@@ -14,3 +14,9 @@ dependencies = []
 
 [project.scripts]
 localpass = "localpass.cli.main:main"
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.pytest.ini_options]
+pythonpath = "src"
