@@ -1,0 +1,25 @@
+name: Ci
+
+on:
+  push:
+    branches: ["main", "feature/*"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: pip install .[dev]
+
+      - name: Run tests
+        run: pytest -q
