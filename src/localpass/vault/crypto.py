@@ -3,7 +3,6 @@ import os
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
 
-
 # Argon2id parameter profile for vault key derivation.
 # Keeping these as constants allows future tuning while preserving
 # format compatibility for existing vaults.

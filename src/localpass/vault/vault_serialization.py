@@ -30,14 +30,14 @@ def vault_to_dict(vault: Vault) -> Dict[str, Any]:
 
 def vault_from_dict(data: Dict[str, Any], path: str = "<in-memory>") -> Vault:
     """Convert a dictionary to a Vault object.
-    
+
     Args:
         data: Dictionary containing vault data
         path: Path to the vault file (for error messages)
-        
+
     Returns:
         Vault object
-        
+
     Raises:
         ValueError: If required fields are missing or data format is invalid
     """
