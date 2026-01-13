@@ -1,4 +1,5 @@
 import os
+
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
 
@@ -11,7 +12,7 @@ def derive_key(password: str, salt: bytes) -> bytes:
         memory_cost=102400,
         lanes=8,
     )
-    return kdf.derive(password.encode('utf-8'))
+    return kdf.derive(password.encode("utf-8"))
 
 
 def encrypt(plaintext: bytes, key: bytes) -> tuple[bytes, bytes]:

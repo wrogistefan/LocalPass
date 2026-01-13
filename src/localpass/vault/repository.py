@@ -9,7 +9,7 @@ from .models import Vault, VaultEntry, VaultMetadata
 
 
 class PlaintextVaultRepository:
-    def load(self, path: str) -> Vault:
+    def load(self, path: str | Path) -> Vault:
         try:
             data = json.loads(Path(path).read_text())
         except FileNotFoundError:
@@ -45,7 +45,7 @@ class PlaintextVaultRepository:
 
         return Vault(metadata=metadata, entries=entries)
 
-    def save(self, path: str, vault: Vault) -> None:
+    def save(self, path: str | Path, vault: Vault) -> None:
         data = {
             "metadata": {
                 "version": vault.metadata.version,
@@ -70,7 +70,7 @@ class PlaintextVaultRepository:
 
 
 class EncryptedVaultRepository:
-    def save(self, path: str, vault: Vault, master_password: str) -> None:
+    def save(self, path: str | Path, vault: Vault, master_password: str) -> None:
         data = {
             "metadata": {
                 "version": vault.metadata.version,
@@ -91,20 +91,20 @@ class EncryptedVaultRepository:
                 for e in vault.entries
             ],
         }
-        plaintext = json.dumps(data).encode('utf-8')
+        plaintext = json.dumps(data).encode("utf-8")
         salt = os.urandom(16)
         key = derive_key(master_password, salt)
         nonce, ciphertext = encrypt(plaintext, key)
         encrypted_data = {
             "version": 1,
             "kdf": "argon2id",
-            "salt": base64.b64encode(salt).decode('utf-8'),
-            "nonce": base64.b64encode(nonce).decode('utf-8'),
-            "ciphertext": base64.b64encode(ciphertext).decode('utf-8')
+            "salt": base64.b64encode(salt).decode("utf-8"),
+            "nonce": base64.b64encode(nonce).decode("utf-8"),
+            "ciphertext": base64.b64encode(ciphertext).decode("utf-8"),
         }
         Path(path).write_text(json.dumps(encrypted_data, indent=2))
 
-    def load(self, path: str, master_password: str) -> Vault:
+    def load(self, path: str | Path, master_password: str) -> Vault:
         try:
             data = json.loads(Path(path).read_text())
         except FileNotFoundError:
@@ -126,7 +126,7 @@ class EncryptedVaultRepository:
             raise ValueError(f"Decryption failed: {exc}")
 
         try:
-            obj = json.loads(plaintext.decode('utf-8'))
+            obj = json.loads(plaintext.decode("utf-8"))
         except json.JSONDecodeError as exc:
             raise ValueError(f"Invalid JSON in decrypted vault data: {exc}")
 

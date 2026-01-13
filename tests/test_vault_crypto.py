@@ -1,13 +1,18 @@
 import json
+from pathlib import Path
 
 import pytest
-from localpass.vault.crypto import derive_key, encrypt, decrypt
-from localpass.vault.repository import EncryptedVaultRepository, PlaintextVaultRepository
-from localpass.vault.models import Vault, VaultMetadata, VaultEntry
+
+from localpass.vault.crypto import decrypt, derive_key, encrypt
+from localpass.vault.models import Vault, VaultEntry, VaultMetadata
+from localpass.vault.repository import (
+    EncryptedVaultRepository,
+    PlaintextVaultRepository,
+)
 from localpass.vault.service import VaultService
 
 
-def test_derive_key():
+def test_derive_key() -> None:
     password = "password123"
     salt = b"salt123456789012"  # 16 bytes
     key = derive_key(password, salt)
@@ -20,7 +25,7 @@ def test_derive_key():
     assert key != key3
 
 
-def test_encrypt_decrypt():
+def test_encrypt_decrypt() -> None:
     plaintext = b"hello world"
     key = b"0" * 32
     nonce, ciphertext = encrypt(plaintext, key)
@@ -29,7 +34,7 @@ def test_encrypt_decrypt():
     assert decrypted == plaintext
 
 
-def test_encrypt_decrypt_roundtrip(tmp_path):
+def test_encrypt_decrypt_roundtrip(tmp_path: Path) -> None:
     repo = EncryptedVaultRepository()
     path = tmp_path / "vault.enc"
 
@@ -42,7 +47,7 @@ def test_encrypt_decrypt_roundtrip(tmp_path):
     assert loaded.entries[0].password == "secret"
 
 
-def test_plaintext_repository_save_load(tmp_path):
+def test_plaintext_repository_save_load(tmp_path: Path) -> None:
     repo = PlaintextVaultRepository()
     path = tmp_path / "vault.json"
 
@@ -55,7 +60,7 @@ def test_plaintext_repository_save_load(tmp_path):
     assert loaded.entries[0].password == "secret"
 
 
-def test_encrypted_repository_wrong_password(tmp_path):
+def test_encrypted_repository_wrong_password(tmp_path: Path) -> None:
     repo = EncryptedVaultRepository()
     path = tmp_path / "vault.enc"
 
@@ -67,17 +72,17 @@ def test_encrypted_repository_wrong_password(tmp_path):
         repo.load(path, "wrongpassword")
 
 
-def test_vault_service_create_load(tmp_path):
+def test_vault_service_create_load(tmp_path: Path) -> None:
     service = VaultService(EncryptedVaultRepository())
     path = str(tmp_path / "vault.enc")
 
-    vault = service.create_vault(path, "password123")
+    service.create_vault(path, "password123")
     loaded = service.load_vault(path, "password123")
 
     assert len(loaded.entries) == 0
 
 
-def test_vault_service_add_entry(tmp_path):
+def test_vault_service_add_entry(tmp_path: Path) -> None:
     service = VaultService(EncryptedVaultRepository())
     path = str(tmp_path / "vault.enc")
 
@@ -88,7 +93,7 @@ def test_vault_service_add_entry(tmp_path):
     assert len(vault.entries) == 1
 
 
-def test_vault_list_entries():
+def test_vault_list_entries() -> None:
     vault = Vault(metadata=VaultMetadata())
     entry1 = VaultEntry.create("service1", "user1", "pass1")
     entry2 = VaultEntry.create("service2", "user2", "pass2")
@@ -101,7 +106,7 @@ def test_vault_list_entries():
     assert entries[1].service == "service2"
 
 
-def test_vault_remove_entry():
+def test_vault_remove_entry() -> None:
     vault = Vault(metadata=VaultMetadata())
     entry1 = VaultEntry.create("service1", "user1", "pass1")
     entry2 = VaultEntry.create("service2", "user2", "pass2")
@@ -113,14 +118,14 @@ def test_vault_remove_entry():
     assert vault.entries[0].service == "service2"
 
 
-def test_plaintext_repository_file_not_found(tmp_path):
+def test_plaintext_repository_file_not_found(tmp_path: Path) -> None:
     repo = PlaintextVaultRepository()
     path = tmp_path / "nonexistent.json"
     with pytest.raises(ValueError, match="Vault file not found"):
         repo.load(str(path))
 
 
-def test_plaintext_repository_invalid_json(tmp_path):
+def test_plaintext_repository_invalid_json(tmp_path: Path) -> None:
     repo = PlaintextVaultRepository()
     path = tmp_path / "invalid.json"
     path.write_text("invalid json")
@@ -128,7 +133,7 @@ def test_plaintext_repository_invalid_json(tmp_path):
         repo.load(str(path))
 
 
-def test_plaintext_repository_missing_fields(tmp_path):
+def test_plaintext_repository_missing_fields(tmp_path: Path) -> None:
     repo = PlaintextVaultRepository()
     path = tmp_path / "missing.json"
     path.write_text('{"metadata": {}}')  # missing entries
@@ -136,14 +141,14 @@ def test_plaintext_repository_missing_fields(tmp_path):
         repo.load(str(path))
 
 
-def test_encrypted_repository_file_not_found(tmp_path):
+def test_encrypted_repository_file_not_found(tmp_path: Path) -> None:
     repo = EncryptedVaultRepository()
     path = tmp_path / "nonexistent.enc"
     with pytest.raises(ValueError, match="Vault file not found"):
         repo.load(str(path), "password")
 
 
-def test_encrypted_repository_invalid_json(tmp_path):
+def test_encrypted_repository_invalid_json(tmp_path: Path) -> None:
     repo = EncryptedVaultRepository()
     path = tmp_path / "invalid.enc"
     path.write_text("invalid json")
@@ -151,7 +156,7 @@ def test_encrypted_repository_invalid_json(tmp_path):
         repo.load(str(path), "password")
 
 
-def test_encrypted_repository_missing_fields(tmp_path):
+def test_encrypted_repository_missing_fields(tmp_path: Path) -> None:
     repo = EncryptedVaultRepository()
     path = tmp_path / "missing.enc"
     path.write_text('{"version": 1}')  # missing fields
@@ -159,9 +164,10 @@ def test_encrypted_repository_missing_fields(tmp_path):
         repo.load(str(path), "password")
 
 
-def test_encrypted_repository_invalid_decrypted_json(tmp_path):
+def test_encrypted_repository_invalid_decrypted_json(tmp_path: Path) -> None:
     # Create a valid encrypted file, but manually corrupt the ciphertext to decrypt to invalid JSON
     import base64
+
     from localpass.vault.crypto import derive_key, encrypt
 
     repo = EncryptedVaultRepository()
@@ -176,18 +182,19 @@ def test_encrypted_repository_invalid_decrypted_json(tmp_path):
     data = {
         "version": 1,
         "kdf": "argon2id",
-        "salt": base64.b64encode(salt).decode('utf-8'),
-        "nonce": base64.b64encode(nonce).decode('utf-8'),
-        "ciphertext": base64.b64encode(ciphertext).decode('utf-8')
+        "salt": base64.b64encode(salt).decode("utf-8"),
+        "nonce": base64.b64encode(nonce).decode("utf-8"),
+        "ciphertext": base64.b64encode(ciphertext).decode("utf-8"),
     }
     import json
+
     path.write_text(json.dumps(data))
 
     with pytest.raises(ValueError, match="Invalid JSON in decrypted vault data"):
         repo.load(str(path), "password")
 
 
-def test_plaintext_repository_invalid_datetime(tmp_path):
+def test_plaintext_repository_invalid_datetime(tmp_path: Path) -> None:
     repo = PlaintextVaultRepository()
     path = tmp_path / "invalid_datetime.json"
     # Invalid datetime format
@@ -195,19 +202,21 @@ def test_plaintext_repository_invalid_datetime(tmp_path):
         "metadata": {
             "version": 1,
             "created_at": "invalid-date",
-            "updated_at": "2023-01-01T00:00:00Z"
+            "updated_at": "2023-01-01T00:00:00Z",
         },
-        "entries": []
+        "entries": [],
     }
     import json
+
     path.write_text(json.dumps(data))
     with pytest.raises(ValueError, match="Invalid data format"):
         repo.load(str(path))
 
 
-def test_encrypted_repository_invalid_datetime(tmp_path):
+def test_encrypted_repository_invalid_datetime(tmp_path: Path) -> None:
     # Encrypt data with invalid datetime
     import base64
+
     from localpass.vault.crypto import derive_key, encrypt
 
     repo = EncryptedVaultRepository()
@@ -217,11 +226,11 @@ def test_encrypted_repository_invalid_datetime(tmp_path):
         "metadata": {
             "version": 1,
             "created_at": "invalid-date",
-            "updated_at": "2023-01-01T00:00:00Z"
+            "updated_at": "2023-01-01T00:00:00Z",
         },
-        "entries": []
+        "entries": [],
     }
-    plaintext = json.dumps(data).encode('utf-8')
+    plaintext = json.dumps(data).encode("utf-8")
     salt = b"salt123456789012"
     key = derive_key("password", salt)
     nonce, ciphertext = encrypt(plaintext, key)
@@ -229,9 +238,9 @@ def test_encrypted_repository_invalid_datetime(tmp_path):
     enc_data = {
         "version": 1,
         "kdf": "argon2id",
-        "salt": base64.b64encode(salt).decode('utf-8'),
-        "nonce": base64.b64encode(nonce).decode('utf-8'),
-        "ciphertext": base64.b64encode(ciphertext).decode('utf-8')
+        "salt": base64.b64encode(salt).decode("utf-8"),
+        "nonce": base64.b64encode(nonce).decode("utf-8"),
+        "ciphertext": base64.b64encode(ciphertext).decode("utf-8"),
     }
     path.write_text(json.dumps(enc_data))
 
