@@ -48,8 +48,8 @@ pip install -e .
 
 Comprehensive documentation is included in this release:
 
-- [📖 User Manual](USER_MANUAL.md) - Complete CLI usage guide
-- [🔐 Security Documentation](SECURITY.md) - Threat model and encryption details
+- [📖 User Manual](docs/USER_MANUAL.md) - Complete CLI usage guide
+- [🔐 Security Documentation](docs/SECURITY.md) - Threat model and encryption details
 - [📜 Changelog](CHANGELOG.md) - Full release history
 
 ## ⚠️ Breaking Changes

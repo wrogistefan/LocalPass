@@ -87,8 +87,8 @@ src/localpass/
 
 ## 📚 Documentation
 
-- [📖 User Manual](USER_MANUAL.md) - Full CLI usage guide
-- [🔐 Security](SECURITY.md) - Threat model and encryption details
+- [📖 User Manual](docs/USER_MANUAL.md) - Full CLI usage guide
+- [🔐 Security](docs/SECURITY.md) - Threat model and encryption details
 - [📜 Changelog](CHANGELOG.md) - Release history
 
 ## 🔐 Security
@@ -98,7 +98,7 @@ LocalPass prioritizes security through:
 - **AES-GCM** authenticated encryption
 - **Zero telemetry** and no cloud dependencies
 
-For detailed security information, see [SECURITY.md](SECURITY.md).
+For detailed security information, see [docs/SECURITY.md](docs/SECURITY.md).
 
 ## 📄 License
 
