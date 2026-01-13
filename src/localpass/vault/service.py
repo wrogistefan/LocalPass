@@ -1,11 +1,11 @@
 from typing import Optional
 
 from .models import Vault, VaultEntry, VaultMetadata
-from .repository import EncryptedVaultRepository
+from .repository import VaultRepository
 
 
 class VaultService:
-    def __init__(self, repo: EncryptedVaultRepository):
+    def __init__(self, repo: VaultRepository):
         self.repo = repo
 
     def create_vault(self, path: str, master_password: str) -> Vault:

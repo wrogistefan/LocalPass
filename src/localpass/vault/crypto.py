@@ -4,13 +4,22 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
 
 
+# Argon2id parameter profile for vault key derivation.
+# Keeping these as constants allows future tuning while preserving
+# format compatibility for existing vaults.
+ARGON2ID_LENGTH = 32
+ARGON2ID_ITERATIONS = 2
+ARGON2ID_MEMORY_COST = 102_400  # in kibibytes
+ARGON2ID_LANES = 8
+
+
 def derive_key(password: str, salt: bytes) -> bytes:
     kdf = Argon2id(
         salt=salt,
-        length=32,
-        iterations=2,
-        memory_cost=102400,
-        lanes=8,
+        length=ARGON2ID_LENGTH,
+        iterations=ARGON2ID_ITERATIONS,
+        memory_cost=ARGON2ID_MEMORY_COST,
+        lanes=ARGON2ID_LANES,
     )
     return kdf.derive(password.encode("utf-8"))
 

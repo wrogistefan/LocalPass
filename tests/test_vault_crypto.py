@@ -68,8 +68,29 @@ def test_encrypted_repository_wrong_password(tmp_path: Path) -> None:
     vault.add_entry(VaultEntry.create("github.com", "lukasz", "secret"))
 
     repo.save(path, vault, "password123")
-    with pytest.raises(ValueError, match="Decryption failed"):
+    with pytest.raises(ValueError, match="Invalid password or corrupted vault"):
         repo.load(path, "wrongpassword")
+
+
+def test_encrypted_repository_corrupted_ciphertext(tmp_path: Path) -> None:
+    repo = EncryptedVaultRepository()
+    path = tmp_path / "vault.enc"
+
+    vault = Vault(metadata=VaultMetadata())
+    vault.add_entry(VaultEntry.create("github.com", "lukasz", "secret"))
+
+    # Save a valid encrypted vault
+    repo.save(path, vault, "password123")
+
+    # Corrupt the stored ciphertext on disk
+    data = json.loads(path.read_text())
+    # Truncate the ciphertext to simulate corruption
+    data["ciphertext"] = data["ciphertext"][:10]
+    path.write_text(json.dumps(data))
+
+    # Loading with the correct password should still fail with a decryption error
+    with pytest.raises(ValueError, match="Invalid password or corrupted vault"):
+        repo.load(path, "password123")
 
 
 def test_vault_service_create_load(tmp_path: Path) -> None:
