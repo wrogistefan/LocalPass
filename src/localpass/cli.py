@@ -1,9 +1,9 @@
 import getpass
-import sys
 from pathlib import Path
 
 import click
 
+from .vault.models import Vault
 from .vault.repository import EncryptedVaultRepository
 from .vault.service import VaultService
 
@@ -15,7 +15,9 @@ def get_vault_service() -> tuple[EncryptedVaultRepository, VaultService]:
     return repo, service
 
 
-def load_vault(path: str, password: str) -> tuple:
+def load_vault(
+    path: str, password: str
+) -> tuple[EncryptedVaultRepository, VaultService, Vault]:
     """Load a vault with consistent error handling."""
     repo, service = get_vault_service()
     try:
