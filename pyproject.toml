@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
-localpass = "localpass.cli.main:main"
+localpass = "localpass.cli:cli"
 
 [project.optional-dependencies]
 dev = [

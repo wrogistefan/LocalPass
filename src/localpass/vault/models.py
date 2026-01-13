@@ -50,3 +50,17 @@ class Vault:
     def remove_entry(self, service: str) -> None:
         self.entries = [e for e in self.entries if e.service != service]
         self.metadata.updated_at = datetime.now(timezone.utc)
+
+    def get_entry_by_id(self, entry_id: str) -> Optional[VaultEntry]:
+        for entry in self.entries:
+            if entry.id == entry_id:
+                return entry
+        return None
+
+    def remove_entry_by_id(self, entry_id: str) -> bool:
+        for i, entry in enumerate(self.entries):
+            if entry.id == entry_id:
+                del self.entries[i]
+                self.metadata.updated_at = datetime.now(timezone.utc)
+                return True
+        return False
