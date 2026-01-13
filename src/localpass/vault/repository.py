@@ -8,36 +8,38 @@ from cryptography.exceptions import InvalidTag
 
 from .crypto import decrypt, derive_key, encrypt
 from .models import Vault
-from .vault_serialization import vault_to_dict, vault_from_dict
+from .vault_serialization import vault_from_dict, vault_to_dict
 
 
 @runtime_checkable
 class VaultRepository(Protocol):
     """Abstract interface for vault repositories."""
-    
+
     def load(self, path: str | Path, master_password: str | None = None) -> Vault:
         """Load a vault from the specified path.
-        
+
         Args:
             path: Path to the vault file
             master_password: Optional master password for encrypted vaults
-            
+
         Returns:
             Vault object
-            
+
         Raises:
             ValueError: If the vault cannot be loaded
         """
         ...
-    
-    def save(self, path: str | Path, vault: Vault, master_password: str | None = None) -> None:
+
+    def save(
+        self, path: str | Path, vault: Vault, master_password: str | None = None
+    ) -> None:
         """Save a vault to the specified path.
-        
+
         Args:
             path: Path to save the vault file
             vault: Vault object to save
             master_password: Optional master password for encrypted vaults
-            
+
         Raises:
             ValueError: If the vault cannot be saved
         """
@@ -55,16 +57,20 @@ class PlaintextVaultRepository:
 
         return vault_from_dict(data, str(path))
 
-    def save(self, path: str | Path, vault: Vault, master_password: str | None = None) -> None:
+    def save(
+        self, path: str | Path, vault: Vault, master_password: str | None = None
+    ) -> None:
         data = vault_to_dict(vault)
         Path(path).write_text(json.dumps(data, indent=2))
 
 
 class EncryptedVaultRepository:
-    def save(self, path: str | Path, vault: Vault, master_password: str | None = None) -> None:
+    def save(
+        self, path: str | Path, vault: Vault, master_password: str | None = None
+    ) -> None:
         if master_password is None:
             raise ValueError("master_password is required for encrypted vaults")
-        
+
         plaintext = json.dumps(vault_to_dict(vault)).encode("utf-8")
         salt = os.urandom(16)
         key = derive_key(master_password, salt)
@@ -81,7 +87,7 @@ class EncryptedVaultRepository:
     def load(self, path: str | Path, master_password: str | None = None) -> Vault:
         if master_password is None:
             raise ValueError("master_password is required for encrypted vaults")
-            
+
         try:
             data = json.loads(Path(path).read_text())
         except FileNotFoundError:
@@ -95,7 +101,7 @@ class EncryptedVaultRepository:
             ciphertext = base64.b64decode(data["ciphertext"])
         except KeyError as exc:
             raise ValueError(f"Missing required field in encrypted vault data: {exc}")
-        except Exception as exc:
+        except Exception:
             raise ValueError("Invalid password or corrupted vault")
 
         key = derive_key(master_password, salt)
