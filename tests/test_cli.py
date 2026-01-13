@@ -109,7 +109,7 @@ def test_show_entry(runner: CliRunner) -> None:
         assert result.exit_code == 0
         assert "Service: TestService" in result.output
         assert "Username: testuser" in result.output
-        assert "Password: testpass" in result.output
+        assert "Password: [hidden]" in result.output
         assert "Notes: Test notes" in result.output
 
 
@@ -125,7 +125,7 @@ def test_show_nonexistent_entry(runner: CliRunner) -> None:
         result = runner.invoke(cli, ["show", test_vault, fake_id], input="password\n")
 
         assert result.exit_code == 1
-        assert f"Entry with ID {fake_id} not found." in result.output
+        assert f"Entry with ID {fake_id} not found." in result.stderr
 
 
 def test_remove_entry(runner: CliRunner) -> None:
@@ -166,4 +166,123 @@ def test_remove_nonexistent_entry(runner: CliRunner) -> None:
         result = runner.invoke(cli, ["remove", test_vault, fake_id], input="password\n")
 
         assert result.exit_code == 1
-        assert f"Entry with ID {fake_id} not found." in result.output
+        assert f"Entry with ID {fake_id} not found." in result.stderr
+
+
+def test_init_password_confirmation_mismatch(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="password\nother-password\n",
+        )
+
+        assert result.exit_code != 0
+        assert "passwords do not match" in result.stderr.lower()
+
+
+def test_add_with_wrong_master_password(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault with a known master password
+        runner.invoke(cli, ["init", test_vault], input="password\npassword\n")
+
+        # Try to add using a wrong master password
+        result = runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="wrongpassword\nService\nuser\npass\n\n",
+        )
+
+        assert result.exit_code != 0
+        assert "invalid password" in result.stderr.lower()
+
+
+def test_list_with_wrong_master_password(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        runner.invoke(cli, ["init", test_vault], input="password\npassword\n")
+
+        result = runner.invoke(
+            cli,
+            ["list", test_vault],
+            input="wrongpassword\n",
+        )
+
+        assert result.exit_code != 0
+        assert "invalid password" in result.stderr.lower()
+
+
+def test_show_with_wrong_master_password(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault and add an entry with the correct password
+        runner.invoke(cli, ["init", test_vault], input="password\npassword\n")
+        runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="password\nService\nuser\npass\n\n",
+        )
+
+        # Use any ID; decryption should fail before lookup matters
+        fake_id = str(uuid.uuid4())
+        result = runner.invoke(
+            cli,
+            ["show", test_vault, fake_id],
+            input="wrongpassword\n",
+        )
+
+        assert result.exit_code != 0
+        assert "invalid password" in result.stderr.lower()
+
+
+def test_remove_with_wrong_master_password(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault and add an entry with the correct password
+        runner.invoke(cli, ["init", test_vault], input="password\npassword\n")
+        runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="password\nService\nuser\npass\n\n",
+        )
+
+        # Use any ID; decryption should fail before lookup matters
+        fake_id = str(uuid.uuid4())
+        result = runner.invoke(
+            cli,
+            ["remove", test_vault, fake_id],
+            input="wrongpassword\n",
+        )
+
+        assert result.exit_code != 0
+        assert "invalid password" in result.stderr.lower()
+
+
+def test_list_with_corrupted_vault_file(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create a valid vault, then corrupt it
+        runner.invoke(cli, ["init", test_vault], input="password\npassword\n")
+
+        # Overwrite the vault file with invalid / unreadable content
+        with open(test_vault, "w", encoding="utf-8") as f:
+            f.write("this is not valid vault data")
+
+        result = runner.invoke(
+            cli,
+            ["list", test_vault],
+            input="password\n",
+        )
+
+        assert result.exit_code != 0
+        # The CLI should surface a predictable, user-friendly error
+        assert "error" in result.stderr.lower()
+        assert "vault" in result.stderr.lower()
