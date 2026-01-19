@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "localpass"
-version = "0.1.0"
+version = "0.1.1"
 description = "Local-first, offline password manager."
 authors = [{name = "Łukasz Perek, lukasz.perek@outlook.com"}]
 license = {text = "Apache-2.0"}
@@ -28,6 +28,10 @@ dev = [
 
 [tool.pytest.ini_options]
 pythonpath = "src"
+filterwarnings = [
+    "ignore:Can not control echo on the terminal:getpass.GetPassWarning",
+    "ignore:PlaintextVaultRepository stores vault data in plaintext and must not be used in production environments:UserWarning",
+]
 
 [tool.ruff]
 line-length = 88

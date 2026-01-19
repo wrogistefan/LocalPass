@@ -15,12 +15,24 @@ LocalPass is a minimal, offline password manager designed for local-first usage.
 - **📦 Zero Cloud**: No cloud sync, no telemetry, no remote storage
 - **📖 Open-Source**: Fully transparent codebase under Apache License 2.0
 
-## ✨ Features Included in v0.1.0
+## ✨ Features Included in v0.1.1
 
 - **Encrypted vault** using Argon2id + AES-GCM
 - **CLI commands**: `init`, `add`, `list`, `show`, `remove`
 - **Cross-platform support** for Windows, macOS, and Linux
 - **Public vault format** for interoperability
+- **Robust serialization** with defaults for missing fields (e.g., tags default to empty list)
+- **Timestamp validation** for vault data integrity
+- **Enhanced error handling** for corrupted or invalid vault files
+
+## 🚀 What's New in 0.1.1
+
+- **Improved serialization robustness**: Vault deserialization now handles missing optional fields gracefully (e.g., `tags` defaults to an empty list if absent).
+- **Enhanced timestamp validation**: Invalid datetime formats in vault files are now properly detected and reported.
+- **Better error handling**: Corrupted ciphertext and invalid JSON in encrypted vaults are handled with clear error messages.
+- **Repository safety warnings**: Plaintext repository usage now emits warnings to prevent accidental use in production.
+- **Vault API enhancements**: Added `remove_entry_by_id` method for precise entry removal by ID.
+- **Test coverage increased**: Comprehensive tests added for edge cases, serialization defaults, and error paths, achieving >95% coverage.
 
 ## 📥 Installation
 

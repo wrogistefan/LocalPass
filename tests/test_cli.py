@@ -113,6 +113,39 @@ def test_show_entry(runner: CliRunner) -> None:
         assert "Notes: Test notes" in result.output
 
 
+def test_show_entry_with_password(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault and add an entry
+        runner.invoke(cli, ["init", test_vault], input="password\npassword\n")
+        add_result = runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="password\nTestService\ntestuser\ntestpass\nTest notes\n",
+        )
+        assert add_result.exit_code == 0
+
+        entry_id = None
+        for line in add_result.output.splitlines():
+            if "ID: " in line:
+                entry_id = line.split("ID: ", 1)[1].strip()
+                break
+
+        assert entry_id is not None, "Failed to parse entry ID from add command output"
+
+        # Test show command with --show-password
+        result = runner.invoke(
+            cli, ["show", test_vault, entry_id, "--show-password"], input="password\n"
+        )
+
+        assert result.exit_code == 0
+        assert "Service: TestService" in result.output
+        assert "Username: testuser" in result.output
+        assert "Password: testpass" in result.output
+        assert "Notes: Test notes" in result.output
+
+
 def test_show_nonexistent_entry(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
