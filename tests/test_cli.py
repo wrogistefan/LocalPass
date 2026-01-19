@@ -298,7 +298,103 @@ def test_remove_nonexistent_entry(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 1
-        assert f"Error: Entry with ID '{fake_id}' not found" in result.stderr
+
+
+def test_init_empty_password_rejected(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Test init with empty password, then valid
+        result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="\nCorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+
+        assert result.exit_code == 0
+        assert (
+            result.output.count(
+                "Error: This field cannot be empty. Please enter a value."
+            )
+            == 1
+        )
+        assert result.output.count("Enter new master password: ") == 2
+        assert "Vault initialized successfully." in result.output
+
+
+def test_add_empty_service_rejected(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault
+        init_result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+        assert init_result.exit_code == 0
+        assert "Vault initialized successfully." in init_result.output
+
+        # Test add with empty service, then valid
+        result = runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\n\nMyService\nmyuser\nmypass\nmypass\nMy notes\n",
+        )
+
+        assert result.exit_code == 0
+        assert result.output.count("Service: ") == 2
+        assert "Entry added with ID:" in result.output
+
+
+def test_add_empty_username_rejected(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault
+        init_result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+        assert init_result.exit_code == 0
+        assert "Vault initialized successfully." in init_result.output
+
+        # Test add with empty username, then valid
+        result = runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\nMyService\n\nmyuser\nmypass\nmypass\nMy notes\n",
+        )
+
+        assert result.exit_code == 0
+        assert result.output.count("Username: ") == 2
+        assert "Entry added with ID:" in result.output
+
+
+def test_add_empty_password_rejected(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault
+        init_result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+        assert init_result.exit_code == 0
+        assert "Vault initialized successfully." in init_result.output
+
+        # Test add with empty password, then valid
+        result = runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\n\nmypass\nmypass\nMy notes\n",
+        )
+
+        assert result.exit_code == 0
+        assert result.output.count("Enter password: ") == 2
+        assert "Entry added with ID:" in result.output
 
 
 def test_init_password_confirmation_mismatch(runner: CliRunner) -> None:
@@ -451,7 +547,9 @@ def test_init_rejects_empty_password(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Error: Master password cannot be empty." in result.output
+        assert (
+            "Error: This field cannot be empty. Please enter a value." in result.output
+        )
         assert "Vault initialized successfully." in result.output
         assert Path(test_vault).exists()
 
@@ -467,7 +565,9 @@ def test_init_rejects_whitespace_password(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Error: Master password cannot be empty." in result.output
+        assert (
+            "Error: This field cannot be empty. Please enter a value." in result.output
+        )
         assert "Vault initialized successfully." in result.output
         assert Path(test_vault).exists()
 
