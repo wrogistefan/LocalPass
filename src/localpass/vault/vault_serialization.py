@@ -75,7 +75,7 @@ def vault_from_dict(data: Dict[str, Any], path: str = "<in-memory>") -> Vault:
         for e in data["entries"]:
             tags = e.get("tags", [])
             if not isinstance(tags, list):
-                tags = [str(tags)] if tags else []
+                raise ValueError(f"Tags must be a list in entry {e.get('id', 'unknown')}")
             entry_created_at = _parse_iso8601(
                 path,
                 f"created_at in entry {e.get('id', 'unknown')}",

@@ -113,26 +113,62 @@ def test_vault_from_dict_invalid_timestamp() -> None:
         },
         "entries": [],
     }
-    with pytest.raises(ValueError, match="Invalid data format"):
+    with pytest.raises(ValueError, match="Invalid ISO8601 timestamp"):
         vault_from_dict(data)
 
 
-def test_vault_operations_edge_cases() -> None:
-    """Test edge cases for vault operations."""
+def test_vault_operations_with_empty_tags() -> None:
+    """Vault handles entries with empty tags without errors."""
     vault = Vault(metadata=VaultMetadata())
 
-    # Add entry with empty tags
-    entry = VaultEntry.create("service", "user", "pass")
+    # Initially no entries
+    assert len(vault.entries) == 0
+
+    # Add an entry with empty tags
+    entry = VaultEntry.create("email", "user@example.com", "secret")
     entry.tags = []
     vault.add_entry(entry)
-    assert len(vault.entries) == 1
 
-    # Remove non-existent service
-    vault.remove_entry("nonexistent")  # Should not raise
     assert len(vault.entries) == 1
+    entry = vault.entries[0]
+    # Explicitly check we keep empty tags as-is
+    assert entry.tags == []
 
-    # Remove entry with multiple matches
-    entry2 = VaultEntry.create("service", "user2", "pass2")
-    vault.add_entry(entry2)
-    vault.remove_entry("service")  # Should remove all with service
-    assert len(vault.entries) == 0
+
+def test_remove_entry_nonexistent_service_does_not_change_entries() -> None:
+    """Removing a non-existent service must not change existing entries."""
+    vault = Vault(metadata=VaultMetadata())
+
+    vault.add_entry(VaultEntry.create("service-a", "alice", "pw-a"))
+    vault.add_entry(VaultEntry.create("service-b", "bob", "pw-b"))
+
+    # Sanity check: we start with two entries
+    assert len(vault.entries) == 2
+
+    # Removing a service that does not exist should not change the vault
+    vault.remove_entry("non-existent-service")
+
+    # Length and contents should be unchanged
+    assert len(vault.entries) == 2
+    assert {e.service for e in vault.entries} == {"service-a", "service-b"}
+
+
+def test_remove_entry_removes_all_matching_services() -> None:
+    """Removing a service removes all entries for that service."""
+    vault = Vault(metadata=VaultMetadata())
+
+    vault.add_entry(VaultEntry.create("service-a", "alice", "pw-a"))
+    vault.add_entry(VaultEntry.create("service-a", "alice-alt", "pw-a2"))
+    vault.add_entry(VaultEntry.create("service-b", "bob", "pw-b"))
+
+    # We start with three entries, two for service-a
+    assert len(vault.entries) == 3
+    assert [e.service for e in vault.entries].count("service-a") == 2
+    assert [e.service for e in vault.entries].count("service-b") == 1
+
+    # When we remove service-a, all its entries should be removed
+    vault.remove_entry("service-a")
+
+    # Only the service-b entry should remain
+    assert len(vault.entries) == 1
+    assert vault.entries[0].service == "service-b"
