@@ -41,9 +41,10 @@ localpass init myvault.lp
 ```
 
 **Process:**
-1. You'll be prompted to enter and confirm a master password
-2. A new vault file will be created at the specified path
-3. The vault uses Argon2id + AES-GCM encryption
+1. You'll be prompted to enter and confirm a master password (cannot be empty)
+2. If the password is left empty, you'll be prompted to enter a value
+3. A new vault file will be created at the specified path
+4. The vault uses Argon2id + AES-GCM encryption
 
 **Example:**
 ```bash
@@ -64,8 +65,9 @@ localpass add myvault.lp
 
 **Process:**
 1. Enter your master password to unlock the vault
-2. Provide entry details: Service, Username, Password, Notes (optional)
-3. The entry will be added and assigned a unique ID
+2. Provide required entry details: Service, Username, Password (all required and cannot be empty), Notes (optional)
+3. If a required field is left empty, you'll be prompted to enter a value
+4. The entry will be added and assigned a unique ID
 
 **Example:**
 ```bash

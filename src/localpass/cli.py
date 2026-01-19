@@ -5,7 +5,7 @@ from pathlib import Path
 import click
 from zxcvbn import zxcvbn
 
-from .prompts import prompt_password_with_confirmation
+from .prompts import prompt_password_with_confirmation, prompt_required_field
 from .vault.models import EntryNotFoundError, Vault
 from .vault.repository import EncryptedVaultRepository
 from .vault.service import VaultService
@@ -52,8 +52,8 @@ def init(path: str) -> None:
 
     while True:
         password = getpass.getpass("Enter new master password: ")
-        if not password or password.isspace():
-            click.echo("Error: Master password cannot be empty.")
+        if not password.strip():
+            click.echo("Error: This field cannot be empty. Please enter a value.")
             continue
         result = zxcvbn(password)
         if result["score"] < 3:
@@ -87,8 +87,8 @@ def add(path: str) -> None:
 
     repo, service, vault = load_vault(path, password)
 
-    service_name = click.prompt("Service")
-    username = click.prompt("Username")
+    service_name = prompt_required_field("Service")
+    username = prompt_required_field("Username")
     entry_password = prompt_password_with_confirmation("Enter password: ")
     notes = click.prompt("Notes (optional)", default="")
 
