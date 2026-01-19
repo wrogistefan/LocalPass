@@ -3,6 +3,7 @@ import importlib.metadata
 from pathlib import Path
 
 import click
+from zxcvbn import zxcvbn
 
 from .vault.models import EntryNotFoundError, Vault
 from .vault.repository import EncryptedVaultRepository
@@ -48,10 +49,24 @@ def init(path: str) -> None:
             click.echo("Aborted.")
             return
 
-    password = getpass.getpass("Enter master password: ")
-    confirm_password = getpass.getpass("Confirm master password: ")
-    if password != confirm_password:
-        raise click.ClickException("Passwords do not match.")
+    while True:
+        password = getpass.getpass("Enter new master password: ")
+        if not password or password.isspace():
+            click.echo("Error: Master password cannot be empty.")
+            continue
+        result = zxcvbn(password)
+        if result['score'] < 3:
+            click.echo("Error: Master password is too weak.")
+            if result['feedback']['warning']:
+                click.echo(f"Warning: {result['feedback']['warning']}")
+            if result['feedback']['suggestions']:
+                click.echo(f"Suggestion: {result['feedback']['suggestions'][0]}")
+            continue
+        confirm_password = getpass.getpass("Confirm master password: ")
+        if password != confirm_password:
+            click.echo("Error: Passwords do not match. Please try again.")
+            continue
+        break
 
     repo, service = get_vault_service()
     try:
