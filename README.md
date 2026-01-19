@@ -123,8 +123,20 @@ For detailed security information, see [docs/SECURITY.md](docs/SECURITY.md).
 
 LocalPass supports different repository types for vault storage, each with varying security levels:
 
-- **EncryptedVaultRepository**: Recommended for production use. Stores vault data encrypted using Argon2id key derivation and AES-GCM encryption, ensuring data confidentiality.
-- **PlaintextVaultRepository**: Stores vault data in plaintext and is **unsafe for production environments**. It is intended only for testing, debugging, or isolated environments where security is not a concern. Using this repository will emit a runtime warning.
+### EncryptedVaultRepository (Recommended)
+
+- **Encryption Model**: Uses Argon2id for password-based key derivation (32-byte key, 100 MiB memory, 2 iterations, 8 parallelism) followed by AES-256-GCM authenticated encryption.
+- **Assumptions**: Relies on the strength of your master password and the security of your local system. Assumes no malware/keyloggers are present.
+- **Limitations**: Does not protect against system compromise, physical theft of both vault file and password, or side-channel attacks.
+- **Key Management**: Your master password is the only key. It must be strong (12+ characters, mixed case, numbers, symbols), unique, and never stored or shared. The password is stretched into a cryptographic key using Argon2id, making brute-force attacks computationally expensive.
+- **When to Use**: Always for production, real-world password management, or any scenario where data confidentiality matters.
+- **Why Required**: Provides robust encryption ensuring vault contents remain confidential at rest and in transit (when backed up).
+
+### PlaintextVaultRepository (Unsafe)
+
+- **Encryption Model**: None - stores all data in plaintext JSON.
+- **Why Unsafe**: Exposes all passwords, usernames, and notes to anyone with file access. Suitable only for testing, debugging, or air-gapped development environments.
+- **Warning**: Emits a runtime warning when used.
 
 Always use `EncryptedVaultRepository` for any real-world scenarios requiring data protection.
 
