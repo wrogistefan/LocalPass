@@ -185,6 +185,13 @@ VAULT_FILE = SALT || NONCE || CIPHERTEXT || AUTH_TAG
 }
 ```
 
+#### Serialization Guarantees
+
+- **Stable JSON Structure**: The JSON schema is stable and backwards-compatible. New fields may be added in future versions, but existing fields will not be removed or changed in meaning.
+- **ISO8601 Timestamps**: All timestamps (`created_at`, `updated_at`) are stored in ISO 8601 format with UTC timezone (e.g., `2026-01-13T01:56:00`). Invalid or non-ISO8601 timestamps will cause deserialization to fail with a clear error message.
+- **Deterministic Ordering**: Entries are serialized in the order they appear in the vault. The JSON structure does not guarantee sorted ordering unless explicitly sorted by the application.
+- **Default Values for Missing Fields**: If the `tags` field is missing from an entry, it defaults to an empty list (`[]`). Other optional fields like `notes` default to `null` if absent.
+
 ## ⚠️ Security Considerations
 
 ### Repository Types

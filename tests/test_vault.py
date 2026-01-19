@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 
 from localpass.vault.models import EntryNotFoundError, Vault, VaultEntry, VaultMetadata
