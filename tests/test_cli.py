@@ -312,7 +312,12 @@ def test_init_empty_password_rejected(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert result.output.count("Error: This field cannot be empty. Please enter a value.") == 1
+        assert (
+            result.output.count(
+                "Error: This field cannot be empty. Please enter a value."
+            )
+            == 1
+        )
         assert result.output.count("Enter new master password: ") == 2
         assert "Vault initialized successfully." in result.output
 
@@ -542,7 +547,9 @@ def test_init_rejects_empty_password(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Error: This field cannot be empty. Please enter a value." in result.output
+        assert (
+            "Error: This field cannot be empty. Please enter a value." in result.output
+        )
         assert "Vault initialized successfully." in result.output
         assert Path(test_vault).exists()
 
@@ -558,7 +565,9 @@ def test_init_rejects_whitespace_password(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Error: This field cannot be empty. Please enter a value." in result.output
+        assert (
+            "Error: This field cannot be empty. Please enter a value." in result.output
+        )
         assert "Vault initialized successfully." in result.output
         assert Path(test_vault).exists()
 
