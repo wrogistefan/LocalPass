@@ -55,11 +55,11 @@ def init(path: str) -> None:
             click.echo("Error: Master password cannot be empty.")
             continue
         result = zxcvbn(password)
-        if result['score'] < 3:
+        if result["score"] < 3:
             click.echo("Error: Master password is too weak.")
-            if result['feedback']['warning']:
+            if result["feedback"]["warning"]:
                 click.echo(f"Warning: {result['feedback']['warning']}")
-            if result['feedback']['suggestions']:
+            if result["feedback"]["suggestions"]:
                 click.echo(f"Suggestion: {result['feedback']['suggestions'][0]}")
             continue
         confirm_password = getpass.getpass("Confirm master password: ")

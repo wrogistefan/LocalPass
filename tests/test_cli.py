@@ -17,7 +17,11 @@ def test_init_creates_file(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Test init command
-        result = runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
 
         assert result.exit_code == 0
         assert "Vault initialized successfully." in result.output
@@ -39,7 +43,9 @@ def test_init_overwrite_prompt(runner: CliRunner) -> None:
 
         # Test init command with overwrite prompt (answer yes)
         result = runner.invoke(
-            cli, ["init", test_vault], input="y\nCorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n"
+            cli,
+            ["init", test_vault],
+            input="y\nCorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
         )
 
         assert result.exit_code == 0
@@ -51,7 +57,11 @@ def test_add_entry(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # First create a vault
-        runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
 
         # Test add command
         result = runner.invoke(
@@ -69,16 +79,26 @@ def test_list_entries(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Create vault and add an entry
-        runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
         runner.invoke(
-            cli, ["add", test_vault], input="CorrectHorseBatteryStaple123!\nService1\nuser1\npass1\n\n"
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
         )
         runner.invoke(
-            cli, ["add", test_vault], input="CorrectHorseBatteryStaple123!\nService2\nuser2\npass2\n\n"
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\nService1\nuser1\npass1\n\n",
+        )
+        runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\nService2\nuser2\npass2\n\n",
         )
 
         # Test list command
-        result = runner.invoke(cli, ["list", test_vault], input="CorrectHorseBatteryStaple123!\n")
+        result = runner.invoke(
+            cli, ["list", test_vault], input="CorrectHorseBatteryStaple123!\n"
+        )
 
         assert result.exit_code == 0
         assert "ID\tService\tUsername\tTags" in result.output
@@ -93,7 +113,11 @@ def test_show_entry(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Create vault and add an entry
-        runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
         add_result = runner.invoke(
             cli,
             ["add", test_vault],
@@ -104,7 +128,9 @@ def test_show_entry(runner: CliRunner) -> None:
         entry_id = add_result.output.split("ID: ")[1].strip()
 
         # Test show command
-        result = runner.invoke(cli, ["show", test_vault, entry_id], input="CorrectHorseBatteryStaple123!\n")
+        result = runner.invoke(
+            cli, ["show", test_vault, entry_id], input="CorrectHorseBatteryStaple123!\n"
+        )
 
         assert result.exit_code == 0
         assert "Service: TestService" in result.output
@@ -118,7 +144,11 @@ def test_show_entry_with_password(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Create vault and add an entry
-        runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
         add_result = runner.invoke(
             cli,
             ["add", test_vault],
@@ -136,7 +166,9 @@ def test_show_entry_with_password(runner: CliRunner) -> None:
 
         # Test show command with --show-password
         result = runner.invoke(
-            cli, ["show", test_vault, entry_id, "--show-password"], input="CorrectHorseBatteryStaple123!\n"
+            cli,
+            ["show", test_vault, entry_id, "--show-password"],
+            input="CorrectHorseBatteryStaple123!\n",
         )
 
         assert result.exit_code == 0
@@ -151,11 +183,17 @@ def test_show_nonexistent_entry(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Create vault
-        runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
 
         # Test show command with non-existent ID
         fake_id = str(uuid.uuid4())
-        result = runner.invoke(cli, ["show", test_vault, fake_id], input="CorrectHorseBatteryStaple123!\n")
+        result = runner.invoke(
+            cli, ["show", test_vault, fake_id], input="CorrectHorseBatteryStaple123!\n"
+        )
 
         assert result.exit_code == 1
         assert f"Entry with ID {fake_id} not found." in result.stderr
@@ -166,9 +204,15 @@ def test_remove_entry(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Create vault and add an entry
-        runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
         add_result = runner.invoke(
-            cli, ["add", test_vault], input="CorrectHorseBatteryStaple123!\nServiceToRemove\nuser\npass\n\n"
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\nServiceToRemove\nuser\npass\n\n",
         )
 
         # Extract the entry ID from the add result
@@ -176,7 +220,9 @@ def test_remove_entry(runner: CliRunner) -> None:
 
         # Test remove command
         result = runner.invoke(
-            cli, ["remove", test_vault, entry_id], input="CorrectHorseBatteryStaple123!\n"
+            cli,
+            ["remove", test_vault, entry_id],
+            input="CorrectHorseBatteryStaple123!\n",
         )
 
         assert result.exit_code == 0
@@ -192,11 +238,19 @@ def test_remove_nonexistent_entry(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Create vault
-        runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
 
         # Test remove command with non-existent ID
         fake_id = str(uuid.uuid4())
-        result = runner.invoke(cli, ["remove", test_vault, fake_id], input="CorrectHorseBatteryStaple123!\n")
+        result = runner.invoke(
+            cli,
+            ["remove", test_vault, fake_id],
+            input="CorrectHorseBatteryStaple123!\n",
+        )
 
         assert result.exit_code == 1
         assert f"Error: Entry with ID '{fake_id}' not found" in result.stderr
@@ -221,7 +275,11 @@ def test_add_with_wrong_master_password(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Create vault with a known master password
-        runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
 
         # Try to add using a wrong master password
         result = runner.invoke(
@@ -238,7 +296,11 @@ def test_list_with_wrong_master_password(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
 
-        runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
 
         result = runner.invoke(
             cli,
@@ -255,7 +317,11 @@ def test_show_with_wrong_master_password(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Create vault and add an entry with the correct password
-        runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
         runner.invoke(
             cli,
             ["add", test_vault],
@@ -279,7 +345,11 @@ def test_remove_with_wrong_master_password(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Create vault and add an entry with the correct password
-        runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
         runner.invoke(
             cli,
             ["add", test_vault],
@@ -303,7 +373,11 @@ def test_list_with_corrupted_vault_file(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Create a valid vault, then corrupt it
-        runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
 
         # Overwrite the vault file with invalid / unreadable content
         with open(test_vault, "w", encoding="utf-8") as f:
@@ -325,7 +399,11 @@ def test_init_rejects_empty_password(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
 
-        result = runner.invoke(cli, ["init", test_vault], input="\nCorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="\nCorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
 
         assert result.exit_code == 0
         assert "Error: Master password cannot be empty." in result.output
@@ -337,7 +415,11 @@ def test_init_rejects_whitespace_password(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
 
-        result = runner.invoke(cli, ["init", test_vault], input="   \nCorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="   \nCorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
 
         assert result.exit_code == 0
         assert "Error: Master password cannot be empty." in result.output
@@ -349,7 +431,11 @@ def test_init_rejects_weak_password(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
 
-        result = runner.invoke(cli, ["init", test_vault], input="123\nCorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="123\nCorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
 
         assert result.exit_code == 0
         assert "Error: Master password is too weak." in result.output
@@ -361,7 +447,11 @@ def test_init_shows_feedback_for_weak_password(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
 
-        result = runner.invoke(cli, ["init", test_vault], input="password\nCorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="password\nCorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
 
         assert result.exit_code == 0
         assert "Error: Master password is too weak." in result.output
@@ -376,7 +466,11 @@ def test_init_accepts_strong_password_score_3(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Using a strong password (score 4)
-        result = runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
 
         assert result.exit_code == 0
         assert "Vault initialized successfully." in result.output
@@ -387,7 +481,11 @@ def test_init_accepts_strong_password_score_4(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
 
-        result = runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
 
         assert result.exit_code == 0
         assert "Vault initialized successfully." in result.output
