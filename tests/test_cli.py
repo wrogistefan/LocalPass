@@ -90,7 +90,9 @@ def test_add_entry_handles_value_error(runner: CliRunner) -> None:
         mock_service = Mock()
         mock_repo.save.side_effect = ValueError("Test save error")
 
-        with patch('localpass.cli.get_vault_service', return_value=(mock_repo, mock_service)):
+        with patch(
+            "localpass.cli.get_vault_service", return_value=(mock_repo, mock_service)
+        ):
             # Test add command
             result = runner.invoke(
                 cli,
@@ -329,7 +331,9 @@ def test_remove_entry_handles_value_error(runner: CliRunner) -> None:
         mock_service = Mock()
         mock_repo.save.side_effect = ValueError("Test save error")
 
-        with patch('localpass.cli.get_vault_service', return_value=(mock_repo, mock_service)):
+        with patch(
+            "localpass.cli.get_vault_service", return_value=(mock_repo, mock_service)
+        ):
 
             # Test remove command
             result = runner.invoke(
@@ -705,7 +709,9 @@ def test_init_handles_value_error(runner: CliRunner) -> None:
         mock_service = Mock()
         mock_service.create_vault.side_effect = ValueError("Test error")
 
-        with patch('localpass.cli.get_vault_service', return_value=(mock_repo, mock_service)):
+        with patch(
+            "localpass.cli.get_vault_service", return_value=(mock_repo, mock_service)
+        ):
             result = runner.invoke(
                 cli,
                 ["init", test_vault],

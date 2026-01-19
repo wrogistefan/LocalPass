@@ -48,16 +48,22 @@ def test_encrypt_decrypt_roundtrip(tmp_path: Path) -> None:
     assert loaded.entries[0].password == "secret"
 
 
-def test_encrypted_repository_save_without_password_raises_error(tmp_path: Path) -> None:
+def test_encrypted_repository_save_without_password_raises_error(
+    tmp_path: Path,
+) -> None:
     repo = EncryptedVaultRepository()
     path = tmp_path / "vault.enc"
     vault = Vault(metadata=VaultMetadata())
 
-    with pytest.raises(ValueError, match="master_password is required for encrypted vaults"):
+    with pytest.raises(
+        ValueError, match="master_password is required for encrypted vaults"
+    ):
         repo.save(path, vault, None)
 
 
-def test_encrypted_repository_load_without_password_raises_error(tmp_path: Path) -> None:
+def test_encrypted_repository_load_without_password_raises_error(
+    tmp_path: Path,
+) -> None:
     repo = EncryptedVaultRepository()
     path = tmp_path / "vault.enc"
     vault = Vault(metadata=VaultMetadata())
@@ -65,12 +71,15 @@ def test_encrypted_repository_load_without_password_raises_error(tmp_path: Path)
 
     repo.save(path, vault, "password123")
 
-    with pytest.raises(ValueError, match="master_password is required for encrypted vaults"):
+    with pytest.raises(
+        ValueError, match="master_password is required for encrypted vaults"
+    ):
         repo.load(path, None)
 
 
 def test_encrypted_repository_decrypt_value_error(tmp_path: Path) -> None:
     from unittest.mock import patch
+
     repo = EncryptedVaultRepository()
     path = tmp_path / "vault.enc"
     vault = Vault(metadata=VaultMetadata())
@@ -78,13 +87,18 @@ def test_encrypted_repository_decrypt_value_error(tmp_path: Path) -> None:
 
     repo.save(path, vault, "password123")
 
-    with patch('localpass.vault.repository.decrypt', side_effect=ValueError("Decrypt failed")):
-        with pytest.raises(CorruptedVaultError, match="Decryption failed: Decrypt failed"):
+    with patch(
+        "localpass.vault.repository.decrypt", side_effect=ValueError("Decrypt failed")
+    ):
+        with pytest.raises(
+            CorruptedVaultError, match="Decryption failed: Decrypt failed"
+        ):
             repo.load(path, "password123")
 
 
 def test_encrypted_repository_decrypt_type_error(tmp_path: Path) -> None:
     from unittest.mock import patch
+
     repo = EncryptedVaultRepository()
     path = tmp_path / "vault.enc"
     vault = Vault(metadata=VaultMetadata())
@@ -92,13 +106,18 @@ def test_encrypted_repository_decrypt_type_error(tmp_path: Path) -> None:
 
     repo.save(path, vault, "password123")
 
-    with patch('localpass.vault.repository.decrypt', side_effect=TypeError("Decrypt failed")):
-        with pytest.raises(CorruptedVaultError, match="Decryption failed: Decrypt failed"):
+    with patch(
+        "localpass.vault.repository.decrypt", side_effect=TypeError("Decrypt failed")
+    ):
+        with pytest.raises(
+            CorruptedVaultError, match="Decryption failed: Decrypt failed"
+        ):
             repo.load(path, "password123")
 
 
 def test_encrypted_repository_decrypt_exception(tmp_path: Path) -> None:
     from unittest.mock import patch
+
     repo = EncryptedVaultRepository()
     path = tmp_path / "vault.enc"
     vault = Vault(metadata=VaultMetadata())
@@ -106,8 +125,13 @@ def test_encrypted_repository_decrypt_exception(tmp_path: Path) -> None:
 
     repo.save(path, vault, "password123")
 
-    with patch('localpass.vault.repository.decrypt', side_effect=Exception("Decrypt failed")):
-        with pytest.raises(CorruptedVaultError, match="Decryption failed \\(unexpected error\\): Decrypt failed"):
+    with patch(
+        "localpass.vault.repository.decrypt", side_effect=Exception("Decrypt failed")
+    ):
+        with pytest.raises(
+            CorruptedVaultError,
+            match="Decryption failed \\(unexpected error\\): Decrypt failed",
+        ):
             repo.load(path, "password123")
 
 
@@ -375,9 +399,9 @@ def test_encrypted_repository_incorrect_password_vs_corrupted(tmp_path: Path) ->
     data["ciphertext"] = data["ciphertext"][:10]  # Corrupt the ciphertext
     path.write_text(json.dumps(data))
 
-    with pytest.raises(CorruptedVaultError) as exc_info:
+    with pytest.raises(CorruptedVaultError) as exc_info2:
         repo.load(path, "correct_password")
-    assert "corrupted or unreadable" in str(exc_info.value).lower()
+    assert "corrupted or unreadable" in str(exc_info2.value).lower()
 
 
 def test_encrypted_repository_success_with_correct_password(tmp_path: Path) -> None:
