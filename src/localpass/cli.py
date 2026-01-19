@@ -3,7 +3,7 @@ from pathlib import Path
 
 import click
 
-from .vault.models import Vault
+from .vault.models import EntryNotFoundError, Vault
 from .vault.repository import EncryptedVaultRepository
 from .vault.service import VaultService
 
@@ -140,5 +140,5 @@ def remove(path: str, id: str) -> None:
             click.echo("Entry removed successfully.")
         except ValueError as e:
             raise click.ClickException(f"Error: {e}")
-    except ValueError as e:
-        raise click.ClickException(str(e))
+    except EntryNotFoundError as e:
+        raise click.ClickException(f"Error: {e}")

@@ -1,5 +1,5 @@
 import pytest
-from localpass.vault import Vault, VaultEntry, VaultMetadata
+from localpass.vault.models import EntryNotFoundError, Vault, VaultEntry, VaultMetadata
 
 
 def test_add_entry() -> None:
@@ -22,12 +22,13 @@ def test_remove_entry_by_id_success() -> None:
     vault.remove_entry_by_id(entry_id)
 
     assert len(vault.entries) == 0
+    assert vault.metadata.updated_at is not None
 
 
 def test_remove_entry_by_id_not_found() -> None:
     vault = Vault(metadata=VaultMetadata())
 
-    with pytest.raises(ValueError, match="Entry with ID 'nonexistent' not found"):
+    with pytest.raises(EntryNotFoundError, match="Entry with ID 'nonexistent' not found"):
         vault.remove_entry_by_id("nonexistent")
 
 

@@ -4,6 +4,11 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 
+class EntryNotFoundError(Exception):
+    """Raised when a vault entry with the given ID does not exist."""
+    pass
+
+
 @dataclass
 class VaultEntry:
     id: str
@@ -63,4 +68,4 @@ class Vault:
                 del self.entries[i]
                 self.metadata.updated_at = datetime.now(timezone.utc)
                 return
-        raise ValueError(f"Entry with ID '{entry_id}' not found")
+        raise EntryNotFoundError(f"Entry with ID '{entry_id}' not found")
