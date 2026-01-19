@@ -34,7 +34,7 @@ def load_vault(
 def cli(ctx):
     """LocalPass CLI for managing encrypted password vaults."""
     if ctx.invoked_subcommand is None:
-        version = importlib.metadata.version('localpass')
+        version = importlib.metadata.version("localpass")
         click.echo(f"localpass, version {version}")
     pass
 
