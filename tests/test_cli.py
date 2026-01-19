@@ -124,9 +124,15 @@ def test_show_entry_with_password(runner: CliRunner) -> None:
             ["add", test_vault],
             input="password\nTestService\ntestuser\ntestpass\nTest notes\n",
         )
+        assert add_result.exit_code == 0
 
-        # Extract the entry ID from the add result
-        entry_id = add_result.output.split("ID: ")[1].strip()
+        entry_id = None
+        for line in add_result.output.splitlines():
+            if "Entry added with ID:" in line:
+                entry_id = line.split("Entry added with ID: ", 1)[1].strip()
+                break
+
+        assert entry_id is not None, "Failed to parse entry ID from add command output"
 
         # Test show command with --show-password
         result = runner.invoke(cli, ["show", test_vault, entry_id, "--show-password"], input="password\n")

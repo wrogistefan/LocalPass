@@ -50,6 +50,9 @@ def vault_from_dict(data: Dict[str, Any], path: str = "<in-memory>") -> Vault:
         )
         entries = []
         for e in data["entries"]:
+            tags = e.get("tags", [])
+            if not isinstance(tags, list):
+                tags = [str(tags)] if tags else []
             entries.append(
                 VaultEntry(
                     id=e["id"],
@@ -57,7 +60,7 @@ def vault_from_dict(data: Dict[str, Any], path: str = "<in-memory>") -> Vault:
                     username=e["username"],
                     password=e["password"],
                     notes=e.get("notes"),
-                    tags=e.get("tags", []),
+                    tags=tags,
                     created_at=datetime.fromisoformat(e["created_at"]),
                     updated_at=datetime.fromisoformat(e["updated_at"]),
                 )
