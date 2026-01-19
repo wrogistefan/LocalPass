@@ -430,10 +430,7 @@ def test_add_with_wrong_master_password(runner: CliRunner) -> None:
         )
 
         assert result.exit_code != 0
-        assert "invalid password" in result.stderr.lower()
-
-
-def test_list_with_wrong_master_password(runner: CliRunner) -> None:
+        assert "incorrect master password" in result.stderr.lower()
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
 
@@ -450,7 +447,7 @@ def test_list_with_wrong_master_password(runner: CliRunner) -> None:
         )
 
         assert result.exit_code != 0
-        assert "invalid password" in result.stderr.lower()
+    assert "incorrect master password" in result.stderr.lower()
 
 
 def test_show_with_wrong_master_password(runner: CliRunner) -> None:
@@ -478,7 +475,7 @@ def test_show_with_wrong_master_password(runner: CliRunner) -> None:
         )
 
         assert result.exit_code != 0
-        assert "invalid password" in result.stderr.lower()
+        assert "incorrect master password" in result.stderr.lower()
 
 
 def test_remove_with_wrong_master_password(runner: CliRunner) -> None:
@@ -506,7 +503,7 @@ def test_remove_with_wrong_master_password(runner: CliRunner) -> None:
         )
 
         assert result.exit_code != 0
-        assert "invalid password" in result.stderr.lower()
+        assert "incorrect master password" in result.stderr.lower()
 
 
 def test_list_with_corrupted_vault_file(runner: CliRunner) -> None:

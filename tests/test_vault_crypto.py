@@ -61,6 +61,8 @@ def test_plaintext_repository_save_load(tmp_path: Path) -> None:
 
 
 def test_encrypted_repository_wrong_password(tmp_path: Path) -> None:
+    from localpass.vault.repository import IncorrectPasswordError
+
     repo = EncryptedVaultRepository()
     path = tmp_path / "vault.enc"
 
@@ -68,11 +70,13 @@ def test_encrypted_repository_wrong_password(tmp_path: Path) -> None:
     vault.add_entry(VaultEntry.create("github.com", "lukasz", "secret"))
 
     repo.save(path, vault, "password123")
-    with pytest.raises(ValueError, match="Invalid password or corrupted vault"):
+    with pytest.raises(IncorrectPasswordError, match="Incorrect master password."):
         repo.load(path, "wrongpassword")
 
 
 def test_encrypted_repository_corrupted_ciphertext(tmp_path: Path) -> None:
+    from localpass.vault.repository import CorruptedVaultError
+
     repo = EncryptedVaultRepository()
     path = tmp_path / "vault.enc"
 
@@ -88,8 +92,8 @@ def test_encrypted_repository_corrupted_ciphertext(tmp_path: Path) -> None:
     data["ciphertext"] = data["ciphertext"][:10]
     path.write_text(json.dumps(data))
 
-    # Loading with the correct password should still fail with a decryption error
-    with pytest.raises(ValueError, match="Invalid password or corrupted vault"):
+    # Loading with the correct password should still fail with a corruption error
+    with pytest.raises(CorruptedVaultError):
         repo.load(path, "password123")
 
 
@@ -147,10 +151,12 @@ def test_plaintext_repository_file_not_found(tmp_path: Path) -> None:
 
 
 def test_plaintext_repository_invalid_json(tmp_path: Path) -> None:
+    from localpass.vault.repository import CorruptedVaultError
+
     repo = PlaintextVaultRepository()
     path = tmp_path / "invalid.json"
     path.write_text("invalid json")
-    with pytest.raises(ValueError, match="Invalid JSON in vault file"):
+    with pytest.raises(CorruptedVaultError):
         repo.load(str(path))
 
 
@@ -170,18 +176,22 @@ def test_encrypted_repository_file_not_found(tmp_path: Path) -> None:
 
 
 def test_encrypted_repository_invalid_json(tmp_path: Path) -> None:
+    from localpass.vault.repository import CorruptedVaultError
+
     repo = EncryptedVaultRepository()
     path = tmp_path / "invalid.enc"
     path.write_text("invalid json")
-    with pytest.raises(ValueError, match="Invalid JSON in vault file"):
+    with pytest.raises(CorruptedVaultError, match="Invalid JSON in vault file"):
         repo.load(str(path), "password")
 
 
 def test_encrypted_repository_missing_fields(tmp_path: Path) -> None:
+    from localpass.vault.repository import CorruptedVaultError
+
     repo = EncryptedVaultRepository()
     path = tmp_path / "missing.enc"
     path.write_text('{"version": 1}')  # missing fields
-    with pytest.raises(ValueError, match="Missing required field"):
+    with pytest.raises(CorruptedVaultError, match="Missing required field"):
         repo.load(str(path), "password")
 
 
@@ -190,6 +200,7 @@ def test_encrypted_repository_invalid_decrypted_json(tmp_path: Path) -> None:
     import base64
 
     from localpass.vault.crypto import derive_key, encrypt
+    from localpass.vault.repository import CorruptedVaultError
 
     repo = EncryptedVaultRepository()
     path = tmp_path / "corrupt.enc"
@@ -211,7 +222,7 @@ def test_encrypted_repository_invalid_decrypted_json(tmp_path: Path) -> None:
 
     path.write_text(json.dumps(data))
 
-    with pytest.raises(ValueError, match="Invalid JSON in decrypted vault data"):
+    with pytest.raises(CorruptedVaultError, match="Invalid JSON in decrypted vault data"):
         repo.load(str(path), "password")
 
 
@@ -267,3 +278,94 @@ def test_encrypted_repository_invalid_datetime(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="Invalid data format"):
         repo.load(str(path), "password")
+
+# ============================================================================
+# New tests for Issue #18: Distinguish between incorrect password and corrupted vault
+# ============================================================================
+
+
+def test_encrypted_repository_incorrect_password_vs_corrupted(tmp_path: Path) -> None:
+    """Test that incorrect password and corrupted vault raise different exceptions."""
+    from localpass.vault.repository import CorruptedVaultError, IncorrectPasswordError
+
+    repo = EncryptedVaultRepository()
+    path = tmp_path / "vault.enc"
+
+    vault = Vault(metadata=VaultMetadata())
+    vault.add_entry(VaultEntry.create("github.com", "lukasz", "secret123"))
+
+    # Save a valid encrypted vault with password "correct_password"
+    repo.save(path, vault, "correct_password")
+
+    # Test 1: Incorrect password should raise IncorrectPasswordError
+    with pytest.raises(IncorrectPasswordError) as exc_info:
+        repo.load(path, "wrong_password")
+    assert "Incorrect master password" in str(exc_info.value)
+
+    # Test 2: Corrupted ciphertext should raise CorruptedVaultError
+    data = json.loads(path.read_text())
+    data["ciphertext"] = data["ciphertext"][:10]  # Corrupt the ciphertext
+    path.write_text(json.dumps(data))
+
+    with pytest.raises(CorruptedVaultError) as exc_info:
+        repo.load(path, "correct_password")
+    assert "corrupted or unreadable" in str(exc_info.value).lower()
+
+
+def test_encrypted_repository_success_with_correct_password(tmp_path: Path) -> None:
+    """Test successful decryption with the correct password."""
+    repo = EncryptedVaultRepository()
+    path = tmp_path / "vault.enc"
+
+    vault = Vault(metadata=VaultMetadata())
+    vault.add_entry(VaultEntry.create("github.com", "lukasz", "secret123"))
+
+    # Save and load with the same password - should succeed
+    repo.save(path, vault, "correct_password")
+    loaded = repo.load(path, "correct_password")
+
+    assert len(loaded.entries) == 1
+    assert loaded.entries[0].service == "github.com"
+    assert loaded.entries[0].password == "secret123"
+
+
+def test_corrupted_vault_missing_fields(tmp_path: Path) -> None:
+    """Test that corrupted vault with missing fields raises CorruptedVaultError."""
+    from localpass.vault.repository import CorruptedVaultError
+
+    repo = EncryptedVaultRepository()
+    path = tmp_path / "corrupted.enc"
+
+    # Write a vault file missing the 'salt' field
+    data = {
+        "version": 1,
+        "kdf": "argon2id",
+        # Missing 'salt', 'nonce', and 'ciphertext'
+    }
+    path.write_text(json.dumps(data))
+
+    with pytest.raises(CorruptedVaultError) as exc_info:
+        repo.load(str(path), "password")
+    assert "Missing required field" in str(exc_info.value)
+
+
+def test_corrupted_vault_invalid_base64(tmp_path: Path) -> None:
+    """Test that corrupted vault with invalid base64 raises CorruptedVaultError."""
+    from localpass.vault.repository import CorruptedVaultError
+
+    repo = EncryptedVaultRepository()
+    path = tmp_path / "corrupted.enc"
+
+    # Write a vault file with invalid base64
+    data = {
+        "version": 1,
+        "kdf": "argon2id",
+        "salt": "not a valid base64!!!",
+        "nonce": "also invalid!!!",
+        "ciphertext": "totally invalid!!!",
+    }
+    path.write_text(json.dumps(data))
+
+    with pytest.raises(CorruptedVaultError) as exc_info:
+        repo.load(str(path), "password")
+    assert "corrupted or unreadable" in str(exc_info.value).lower()
