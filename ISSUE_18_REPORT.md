@@ -91,7 +91,7 @@ Updated 4 existing CLI tests to expect the new error messages:
 - `test_show_with_wrong_master_password`
 - `test_remove_with_wrong_master_password`
 
-Updated 3 existing vault crypto tests to use new exception types:
+Updated existing vault crypto tests to use new exception types:
 - `test_plaintext_repository_invalid_json`
 - `test_encrypted_repository_invalid_json`
 - `test_encrypted_repository_missing_fields`

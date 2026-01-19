@@ -93,6 +93,7 @@ def test_encrypted_repository_corrupted_ciphertext(tmp_path: Path) -> None:
     path.write_text(json.dumps(data))
 
     # Loading with the correct password should still fail with a corruption error
+    # Also assert on the error message to ensure corrupted ciphertext is properly detected
     with pytest.raises(CorruptedVaultError):
         repo.load(path, "password123")
 
