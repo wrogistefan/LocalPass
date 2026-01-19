@@ -204,7 +204,11 @@ def test_add_entry_password_confirmation_success(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Create vault
-        runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
 
         # Test add with matching passwords
         result = runner.invoke(
@@ -222,7 +226,11 @@ def test_add_entry_password_confirmation_retry(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Create vault
-        runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
 
         # Test add with mismatched passwords, then correct
         result = runner.invoke(
