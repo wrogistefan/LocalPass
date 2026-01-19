@@ -147,7 +147,9 @@ class EncryptedVaultRepository:
             # TypeError: argument type mismatch
             raise CorruptedVaultError(f"Decryption failed: {exc}") from exc
         except Exception as exc:
-            raise CorruptedVaultError(f"Decryption failed (unexpected error): {exc}") from exc
+            raise CorruptedVaultError(
+                f"Decryption failed (unexpected error): {exc}"
+            ) from exc
 
         try:
             obj = json.loads(plaintext.decode("utf-8"))
