@@ -222,7 +222,9 @@ def test_encrypted_repository_invalid_decrypted_json(tmp_path: Path) -> None:
 
     path.write_text(json.dumps(data))
 
-    with pytest.raises(CorruptedVaultError, match="Invalid JSON in decrypted vault data"):
+    with pytest.raises(
+        CorruptedVaultError, match="Invalid JSON in decrypted vault data"
+    ):
         repo.load(str(path), "password")
 
 
@@ -278,6 +280,7 @@ def test_encrypted_repository_invalid_datetime(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="Invalid data format"):
         repo.load(str(path), "password")
+
 
 # ============================================================================
 # New tests for Issue #18: Distinguish between incorrect password and corrupted vault

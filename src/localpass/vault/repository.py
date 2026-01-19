@@ -14,11 +14,13 @@ from .vault_serialization import vault_from_dict, vault_to_dict
 
 class IncorrectPasswordError(ValueError):
     """Raised when the master password is incorrect."""
+
     pass
 
 
 class CorruptedVaultError(ValueError):
     """Raised when the vault file is corrupted or unreadable."""
+
     pass
 
 
@@ -76,7 +78,7 @@ class PlaintextVaultRepository(VaultRepository):
             data = json.loads(Path(path).read_text())
         except FileNotFoundError:
             raise ValueError(f"Vault file not found: {path}")
-        except json.JSONDecodeError as exc:
+        except json.JSONDecodeError:
             raise CorruptedVaultError("Vault file is corrupted or unreadable.")
 
         return vault_from_dict(data, str(path))
@@ -124,7 +126,9 @@ class EncryptedVaultRepository:
             nonce = base64.b64decode(data["nonce"])
             ciphertext = base64.b64decode(data["ciphertext"])
         except KeyError as exc:
-            raise CorruptedVaultError(f"Missing required field in encrypted vault data: {exc}")
+            raise CorruptedVaultError(
+                f"Missing required field in encrypted vault data: {exc}"
+            )
         except Exception:
             raise CorruptedVaultError("Vault file is corrupted or unreadable.")
 
