@@ -286,3 +286,11 @@ def test_list_with_corrupted_vault_file(runner: CliRunner) -> None:
         # The CLI should surface a predictable, user-friendly error
         assert "error" in result.stderr.lower()
         assert "vault" in result.stderr.lower()
+
+
+def test_cli_shows_version_when_no_args(runner: CliRunner) -> None:
+    result = runner.invoke(cli, [])
+
+    assert result.exit_code == 0
+    assert "version" in result.output.lower()
+    assert "0.1.1" in result.output
