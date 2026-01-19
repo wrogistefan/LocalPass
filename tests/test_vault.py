@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 
 from localpass.vault.models import EntryNotFoundError, Vault, VaultEntry, VaultMetadata
@@ -57,6 +59,35 @@ def test_vault_serialization_roundtrip() -> None:
     vault.add_entry(entry)
 
     data = vault_to_dict(vault)
+
+    # Basic structure guarantees
+    assert set(data.keys()) == {"metadata", "entries"}
+
+    metadata = data["metadata"]
+    assert isinstance(metadata, dict)
+    assert metadata["version"] == vault.metadata.version
+    assert "created_at" in metadata
+    assert "updated_at" in metadata
+
+    # ISO8601 timestamp guarantees (parseable as ISO8601)
+    for ts_key in ("created_at", "updated_at"):
+        ts_value = metadata[ts_key]
+        assert isinstance(ts_value, str)
+        # Allow a trailing 'Z' by normalizing to a UTC offset
+        normalized = ts_value.replace("Z", "+00:00")
+        datetime.fromisoformat(normalized)
+
+    entries = data["entries"]
+    assert isinstance(entries, list)
+    assert len(entries) == 1
+
+    entry_data = entries[0]
+    assert entry_data["service"] == "github"
+    # Ensure tags field is always present in serialization
+    assert "tags" in entry_data
+    assert entry_data["tags"] == []
+
+    # Roundtrip guarantees
     loaded = vault_from_dict(data)
 
     assert loaded.metadata.version == vault.metadata.version
@@ -110,8 +141,8 @@ def test_vault_serialization_valid_timestamps() -> None:
         ],
     }
     vault = vault_from_dict(data)
-    assert vault.metadata.created_at.isoformat() == "2023-01-01T00:00:00"
-    assert vault.entries[0].created_at.isoformat() == "2023-01-01T00:00:00"
+    assert vault.metadata.created_at.isoformat() == "2023-01-01T00:00:00+00:00"
+    assert vault.entries[0].created_at.isoformat() == "2023-01-01T00:00:00+00:00"
 
 
 def test_vault_serialization_invalid_timestamp_metadata() -> None:
@@ -125,6 +156,21 @@ def test_vault_serialization_invalid_timestamp_metadata() -> None:
     }
     with pytest.raises(
         ValueError, match="Invalid ISO8601 timestamp for metadata created_at"
+    ):
+        vault_from_dict(data)
+
+
+def test_vault_serialization_invalid_timestamp_metadata_updated_at() -> None:
+    data = {
+        "metadata": {
+            "version": 1,
+            "created_at": "2023-01-01T00:00:00",
+            "updated_at": "invalid-date",
+        },
+        "entries": [],
+    }
+    with pytest.raises(
+        ValueError, match="Invalid ISO8601 timestamp for metadata updated_at"
     ):
         vault_from_dict(data)
 
@@ -151,6 +197,58 @@ def test_vault_serialization_invalid_timestamp_entry() -> None:
     }
     with pytest.raises(
         ValueError, match="Invalid ISO8601 timestamp for created_at in entry 123"
+    ):
+        vault_from_dict(data)
+
+
+def test_vault_serialization_invalid_timestamp_entry_updated_at() -> None:
+    data = {
+        "metadata": {
+            "version": 1,
+            "created_at": "2023-01-01T00:00:00",
+            "updated_at": "2023-01-01T00:00:00",
+        },
+        "entries": [
+            {
+                "id": "123",
+                "service": "github",
+                "username": "lukasz",
+                "password": "secret",
+                "notes": None,
+                "tags": [],
+                "created_at": "2023-01-01T00:00:00",
+                "updated_at": "invalid-date",
+            }
+        ],
+    }
+    with pytest.raises(
+        ValueError, match="Invalid ISO8601 timestamp for updated_at in entry 123"
+    ):
+        vault_from_dict(data)
+
+
+def test_vault_serialization_invalid_timestamp_entry_unknown_id() -> None:
+    data = {
+        "metadata": {
+            "version": 1,
+            "created_at": "2023-01-01T00:00:00",
+            "updated_at": "2023-01-01T00:00:00",
+        },
+        "entries": [
+            {
+                # intentionally no "id" field to trigger the 'unknown' fallback
+                "service": "github",
+                "username": "lukasz",
+                "password": "secret",
+                "notes": None,
+                "tags": [],
+                "created_at": "invalid-date",
+                "updated_at": "2023-01-01T00:00:00",
+            }
+        ],
+    }
+    with pytest.raises(
+        ValueError, match="Invalid ISO8601 timestamp for created_at in entry unknown"
     ):
         vault_from_dict(data)
 
