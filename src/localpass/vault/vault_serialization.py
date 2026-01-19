@@ -93,7 +93,7 @@ def vault_from_dict(data: Dict[str, Any], path: str = "<in-memory>") -> Vault:
                     username=e["username"],
                     password=e["password"],
                     notes=e.get("notes"),
-                    tags=e.get("tags", []),
+                    tags=tags,
                     created_at=entry_created_at,
                     updated_at=entry_updated_at,
                 )

@@ -128,8 +128,8 @@ def test_show_entry_with_password(runner: CliRunner) -> None:
 
         entry_id = None
         for line in add_result.output.splitlines():
-            if "Entry added with ID:" in line:
-                entry_id = line.split("Entry added with ID: ", 1)[1].strip()
+            if "ID: " in line:
+                entry_id = line.split("ID: ", 1)[1].strip()
                 break
 
         assert entry_id is not None, "Failed to parse entry ID from add command output"
