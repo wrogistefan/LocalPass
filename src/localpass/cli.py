@@ -1,4 +1,5 @@
 import getpass
+import importlib.metadata
 from pathlib import Path
 
 import click
@@ -27,10 +28,14 @@ def load_vault(
         raise click.ClickException(f"Error: {e}")
 
 
-@click.group()
-def cli() -> None:
+@click.group(invoke_without_command=True)
+@click.version_option()
+@click.pass_context
+def cli(ctx: click.Context) -> None:
     """LocalPass CLI for managing encrypted password vaults."""
-    pass
+    if ctx.invoked_subcommand is None:
+        version = importlib.metadata.version("localpass")
+        click.echo(f"{ctx.info_name}, version {version}")
 
 
 @cli.command()
