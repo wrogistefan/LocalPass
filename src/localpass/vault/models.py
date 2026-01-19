@@ -57,10 +57,10 @@ class Vault:
                 return entry
         return None
 
-    def remove_entry_by_id(self, entry_id: str) -> bool:
+    def remove_entry_by_id(self, entry_id: str) -> None:
         for i, entry in enumerate(self.entries):
             if entry.id == entry_id:
                 del self.entries[i]
                 self.metadata.updated_at = datetime.now(timezone.utc)
-                return True
-        return False
+                return
+        raise ValueError(f"Entry with ID '{entry_id}' not found")

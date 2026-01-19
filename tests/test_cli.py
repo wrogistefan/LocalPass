@@ -166,7 +166,7 @@ def test_remove_nonexistent_entry(runner: CliRunner) -> None:
         result = runner.invoke(cli, ["remove", test_vault, fake_id], input="password\n")
 
         assert result.exit_code == 1
-        assert f"Entry with ID {fake_id} not found." in result.stderr
+        assert f"Entry with ID '{fake_id}' not found" in result.stderr
 
 
 def test_init_password_confirmation_mismatch(runner: CliRunner) -> None:

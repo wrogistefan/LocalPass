@@ -85,7 +85,26 @@ src/localpass/
 └── __main__.py         # Entry point
 ```
 
-## 📚 Documentation
+## 🔧 Vault API
+
+The `Vault` class provides the core API for managing password entries:
+
+### Methods
+
+- `add_entry(entry: VaultEntry) -> None`: Add a new entry to the vault.
+- `list_entries() -> List[VaultEntry]`: Return a copy of all entries in the vault.
+- `get_entry_by_id(entry_id: str) -> Optional[VaultEntry]`: Retrieve an entry by its unique ID, or `None` if not found.
+- `remove_entry(service: str) -> None`: Remove all entries that match the specified service name.
+- `remove_entry_by_id(entry_id: str) -> None`: Remove the entry with the specified unique ID. Raises `ValueError` if the entry does not exist.
+
+### Key Differences
+
+- `remove_entry(service)` performs a bulk removal of all entries for a given service, which is useful for cleaning up multiple accounts.
+- `remove_entry_by_id(entry_id)` provides granular deletion of a single entry by its ID, intended for precise CLI operations. It ensures the entry exists before removal.
+
+This API is designed for programmatic use and powers the LocalPass CLI.
+
+##  Documentation
 
 - [📖 User Manual](docs/USER_MANUAL.md) - Full CLI usage guide
 - [🔐 Security](docs/SECURITY.md) - Threat model and encryption details

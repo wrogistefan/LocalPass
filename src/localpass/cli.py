@@ -133,11 +133,12 @@ def remove(path: str, id: str) -> None:
 
     repo, service, vault = load_vault(path, password)
 
-    if vault.remove_entry_by_id(id):
+    try:
+        vault.remove_entry_by_id(id)
         try:
             repo.save(path, vault, password)
             click.echo("Entry removed successfully.")
         except ValueError as e:
             raise click.ClickException(f"Error: {e}")
-    else:
-        raise click.ClickException(f"Entry with ID {id} not found.")
+    except ValueError as e:
+        raise click.ClickException(str(e))
