@@ -6,6 +6,7 @@ from typing import List, Optional
 
 class EntryNotFoundError(Exception):
     """Raised when a vault entry with the given ID does not exist."""
+
     pass
 
 
