@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+import warnings
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
@@ -46,12 +47,19 @@ class VaultRepository(Protocol):
         ...
 
 
-class PlaintextVaultRepository:
+class PlaintextVaultRepository(VaultRepository):
     """WARNING: This repository stores vault data in plaintext and is UNSAFE for production use.
 
     It is intended ONLY for testing, debugging, or isolated environments where security is not a concern.
     Do not use this in any environment where data confidentiality is required.
     """
+
+    def __init__(self) -> None:
+        warnings.warn(
+            "PlaintextVaultRepository stores vault data in plaintext and must not be used in production environments.",
+            UserWarning,
+            stacklevel=2,
+        )
 
     def load(self, path: str | Path, master_password: str | None = None) -> Vault:
         try:
