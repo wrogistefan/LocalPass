@@ -67,7 +67,7 @@ def test_add_entry(runner: CliRunner) -> None:
         result = runner.invoke(
             cli,
             ["add", test_vault],
-            input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\nmypass\nMy notes\n",
+            input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\nmypass\nmypass\nMy notes\n",
         )
 
         assert result.exit_code == 0
@@ -87,12 +87,12 @@ def test_list_entries(runner: CliRunner) -> None:
         runner.invoke(
             cli,
             ["add", test_vault],
-            input="CorrectHorseBatteryStaple123!\nService1\nuser1\npass1\n\n",
+            input="CorrectHorseBatteryStaple123!\nService1\nuser1\npass1\npass1\n\n",
         )
         runner.invoke(
             cli,
             ["add", test_vault],
-            input="CorrectHorseBatteryStaple123!\nService2\nuser2\npass2\n\n",
+            input="CorrectHorseBatteryStaple123!\nService2\nuser2\npass2\npass2\n\n",
         )
 
         # Test list command
@@ -121,7 +121,7 @@ def test_show_entry(runner: CliRunner) -> None:
         add_result = runner.invoke(
             cli,
             ["add", test_vault],
-            input="CorrectHorseBatteryStaple123!\nTestService\ntestuser\ntestpass\nTest notes\n",
+            input="CorrectHorseBatteryStaple123!\nTestService\ntestuser\ntestpass\ntestpass\nTest notes\n",
         )
 
         # Extract the entry ID from the add result
@@ -152,7 +152,7 @@ def test_show_entry_with_password(runner: CliRunner) -> None:
         add_result = runner.invoke(
             cli,
             ["add", test_vault],
-            input="CorrectHorseBatteryStaple123!\nTestService\ntestuser\ntestpass\nTest notes\n",
+            input="CorrectHorseBatteryStaple123!\nTestService\ntestuser\ntestpass\ntestpass\nTest notes\n",
         )
         assert add_result.exit_code == 0
 
@@ -199,6 +199,43 @@ def test_show_nonexistent_entry(runner: CliRunner) -> None:
         assert f"Entry with ID {fake_id} not found." in result.stderr
 
 
+def test_add_entry_password_confirmation_success(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault
+        runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+
+        # Test add with matching passwords
+        result = runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\nService\nuser\nentrypass\nentrypass\nnotes\n",
+        )
+
+        assert result.exit_code == 0
+        assert "Entry added with ID:" in result.output
+
+
+def test_add_entry_password_confirmation_retry(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault
+        runner.invoke(cli, ["init", test_vault], input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n")
+
+        # Test add with mismatched passwords, then correct
+        result = runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\nService\nuser\nentrypass\nwrong\nentrypass\nentrypass\nnotes\n",
+        )
+
+        assert result.exit_code == 0
+        assert "Entry added with ID:" in result.output
+        assert "Error: Passwords do not match. Please try again." in result.output
+
+
 def test_remove_entry(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
@@ -212,7 +249,7 @@ def test_remove_entry(runner: CliRunner) -> None:
         add_result = runner.invoke(
             cli,
             ["add", test_vault],
-            input="CorrectHorseBatteryStaple123!\nServiceToRemove\nuser\npass\n\n",
+            input="CorrectHorseBatteryStaple123!\nServiceToRemove\nuser\npass\npass\n\n",
         )
 
         # Extract the entry ID from the add result

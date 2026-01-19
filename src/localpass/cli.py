@@ -5,6 +5,7 @@ from pathlib import Path
 import click
 from zxcvbn import zxcvbn
 
+from .prompts import confirm_password
 from .vault.models import EntryNotFoundError, Vault
 from .vault.repository import EncryptedVaultRepository
 from .vault.service import VaultService
@@ -64,11 +65,8 @@ def init(path: str) -> None:
             if suggestions:
                 click.echo(f"Suggestion: {suggestions[0]}")
             continue
-        confirm_password = getpass.getpass("Confirm master password: ")
-        if password != confirm_password:
-            click.echo("Error: Passwords do not match. Please try again.")
-            continue
-        break
+        if confirm_password(password, "Confirm master password: "):
+            break
 
     repo, service = get_vault_service()
     try:
@@ -88,7 +86,9 @@ def add(path: str) -> None:
 
     service_name = click.prompt("Service")
     username = click.prompt("Username")
-    entry_password = getpass.getpass("Password: ")
+    entry_password = getpass.getpass("Enter password: ")
+    while not confirm_password(entry_password):
+        entry_password = getpass.getpass("Enter password: ")
     notes = click.prompt("Notes (optional)", default="")
 
     entry = service.add_entry(
