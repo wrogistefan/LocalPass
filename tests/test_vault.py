@@ -172,3 +172,44 @@ def test_remove_entry_removes_all_matching_services() -> None:
     # Only the service-b entry should remain
     assert len(vault.entries) == 1
     assert vault.entries[0].service == "service-b"
+
+
+def test_vault_from_dict_tags_not_list() -> None:
+    """Test that tags not being a list raises ValueError."""
+    data = {
+        "metadata": {
+            "version": 1,
+            "created_at": "2023-01-01T00:00:00",
+            "updated_at": "2023-01-01T00:00:00",
+        },
+        "entries": [
+            {
+                "id": "123",
+                "service": "test",
+                "username": "user",
+                "password": "pass",
+                "tags": "not_a_list",  # Invalid: should be list
+                "notes": "notes",
+                "created_at": "2023-01-01T00:00:00",
+                "updated_at": "2023-01-01T00:00:00",
+            }
+        ],
+    }
+
+    with pytest.raises(ValueError, match="Tags must be a list"):
+        vault_from_dict(data, "test.json")
+
+
+def test_vault_from_dict_non_utc_timezone() -> None:
+    """Test that non-UTC timezone in metadata raises ValueError."""
+    data = {
+        "metadata": {
+            "version": 1,
+            "created_at": "2023-01-01T00:00:00+01:00",  # Non-UTC
+            "updated_at": "2023-01-01T00:00:00",
+        },
+        "entries": [],
+    }
+
+    with pytest.raises(ValueError, match="must be in UTC timezone"):
+        vault_from_dict(data, "test.json")

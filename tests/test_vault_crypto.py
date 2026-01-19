@@ -6,6 +6,7 @@ import pytest
 from localpass.vault.crypto import decrypt, derive_key, encrypt
 from localpass.vault.models import Vault, VaultEntry, VaultMetadata
 from localpass.vault.repository import (
+    CorruptedVaultError,
     EncryptedVaultRepository,
     PlaintextVaultRepository,
 )
@@ -45,6 +46,69 @@ def test_encrypt_decrypt_roundtrip(tmp_path: Path) -> None:
     loaded = repo.load(path, "password123")
 
     assert loaded.entries[0].password == "secret"
+
+
+def test_encrypted_repository_save_without_password_raises_error(tmp_path: Path) -> None:
+    repo = EncryptedVaultRepository()
+    path = tmp_path / "vault.enc"
+    vault = Vault(metadata=VaultMetadata())
+
+    with pytest.raises(ValueError, match="master_password is required for encrypted vaults"):
+        repo.save(path, vault, None)
+
+
+def test_encrypted_repository_load_without_password_raises_error(tmp_path: Path) -> None:
+    repo = EncryptedVaultRepository()
+    path = tmp_path / "vault.enc"
+    vault = Vault(metadata=VaultMetadata())
+    vault.add_entry(VaultEntry.create("github.com", "lukasz", "secret"))
+
+    repo.save(path, vault, "password123")
+
+    with pytest.raises(ValueError, match="master_password is required for encrypted vaults"):
+        repo.load(path, None)
+
+
+def test_encrypted_repository_decrypt_value_error(tmp_path: Path) -> None:
+    from unittest.mock import patch
+    repo = EncryptedVaultRepository()
+    path = tmp_path / "vault.enc"
+    vault = Vault(metadata=VaultMetadata())
+    vault.add_entry(VaultEntry.create("github.com", "lukasz", "secret"))
+
+    repo.save(path, vault, "password123")
+
+    with patch('localpass.vault.repository.decrypt', side_effect=ValueError("Decrypt failed")):
+        with pytest.raises(CorruptedVaultError, match="Decryption failed: Decrypt failed"):
+            repo.load(path, "password123")
+
+
+def test_encrypted_repository_decrypt_type_error(tmp_path: Path) -> None:
+    from unittest.mock import patch
+    repo = EncryptedVaultRepository()
+    path = tmp_path / "vault.enc"
+    vault = Vault(metadata=VaultMetadata())
+    vault.add_entry(VaultEntry.create("github.com", "lukasz", "secret"))
+
+    repo.save(path, vault, "password123")
+
+    with patch('localpass.vault.repository.decrypt', side_effect=TypeError("Decrypt failed")):
+        with pytest.raises(CorruptedVaultError, match="Decryption failed: Decrypt failed"):
+            repo.load(path, "password123")
+
+
+def test_encrypted_repository_decrypt_exception(tmp_path: Path) -> None:
+    from unittest.mock import patch
+    repo = EncryptedVaultRepository()
+    path = tmp_path / "vault.enc"
+    vault = Vault(metadata=VaultMetadata())
+    vault.add_entry(VaultEntry.create("github.com", "lukasz", "secret"))
+
+    repo.save(path, vault, "password123")
+
+    with patch('localpass.vault.repository.decrypt', side_effect=Exception("Decrypt failed")):
+        with pytest.raises(CorruptedVaultError, match="Decryption failed \\(unexpected error\\): Decrypt failed"):
+            repo.load(path, "password123")
 
 
 def test_plaintext_repository_save_load(tmp_path: Path) -> None:
