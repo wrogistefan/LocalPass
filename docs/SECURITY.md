@@ -52,6 +52,27 @@ Where:
 - `CIPHERTEXT`: Encrypted vault data
 - `AUTH_TAG`: 16-byte authentication tag for integrity verification
 
+## 📁 Repository Types and Security
+
+LocalPass supports different repository implementations for vault storage, each with distinct security properties:
+
+### EncryptedVaultRepository (Recommended)
+
+- **Security Level**: High
+- **Encryption**: Uses Argon2id key derivation and AES-GCM encryption
+- **Use Case**: Production environments, real-world password management
+- **Risks**: None for encrypted data at rest; standard cryptographic protections apply
+
+### PlaintextVaultRepository (Development Only)
+
+- **Security Level**: None
+- **Encryption**: Stores vault data in plaintext JSON format
+- **Use Case**: Testing, debugging, or isolated development environments only
+- **Risks**: Complete exposure of all sensitive data (passwords, usernames, notes) to anyone with file access
+- **Warning**: This repository emits a runtime `UserWarning` when instantiated and is explicitly marked as unsafe for production use
+
+**Critical**: Never use `PlaintextVaultRepository` in any environment where data confidentiality is required. It exists solely for development and testing purposes.
+
 ## 🚫 What LocalPass Does NOT Do
 
 ### No Cloud Integration

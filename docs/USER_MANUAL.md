@@ -185,6 +185,17 @@ VAULT_FILE = SALT || NONCE || CIPHERTEXT || AUTH_TAG
 }
 ```
 
+## ⚠️ Security Considerations
+
+### Repository Types
+
+LocalPass supports different repository implementations for vault storage:
+
+- **EncryptedVaultRepository**: The default and recommended option. Uses strong encryption (Argon2id + AES-GCM) to protect your data.
+- **PlaintextVaultRepository**: Stores vault data in unencrypted JSON format. **This is unsafe for production use** and should only be used for testing, debugging, or isolated environments where security is not a concern. Using this repository will display a warning message.
+
+**Important**: Always use the encrypted repository for any real-world password management to ensure your data remains confidential.
+
 ## ❓ Troubleshooting
 
 ### Wrong Password

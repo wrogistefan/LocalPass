@@ -100,6 +100,15 @@ LocalPass prioritizes security through:
 
 For detailed security information, see [docs/SECURITY.md](docs/SECURITY.md).
 
+## ⚠️ Security Notes
+
+LocalPass supports different repository types for vault storage, each with varying security levels:
+
+- **EncryptedVaultRepository**: Recommended for production use. Stores vault data encrypted using Argon2id key derivation and AES-GCM encryption, ensuring data confidentiality.
+- **PlaintextVaultRepository**: Stores vault data in plaintext and is **unsafe for production environments**. It is intended only for testing, debugging, or isolated environments where security is not a concern. Using this repository will emit a runtime warning.
+
+Always use `EncryptedVaultRepository` for any real-world scenarios requiring data protection.
+
 ## 📄 License
 
 This project is licensed under the Apache License 2.0.
