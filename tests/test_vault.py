@@ -1,6 +1,7 @@
 import pytest
 
 from localpass.vault.models import EntryNotFoundError, Vault, VaultEntry, VaultMetadata
+from localpass.vault.vault_serialization import vault_from_dict, vault_to_dict
 
 
 def test_add_entry() -> None:
@@ -48,3 +49,127 @@ def test_remove_entry_service() -> None:
 
     assert len(vault.entries) == 1
     assert vault.entries[0].service == "github"
+
+
+def test_vault_serialization_roundtrip() -> None:
+    vault = Vault(metadata=VaultMetadata())
+    entry = VaultEntry.create("github", "lukasz", "secret")
+    vault.add_entry(entry)
+
+    data = vault_to_dict(vault)
+    loaded = vault_from_dict(data)
+
+    assert loaded.metadata.version == vault.metadata.version
+    assert len(loaded.entries) == 1
+    assert loaded.entries[0].service == "github"
+    assert loaded.entries[0].tags == []
+
+
+def test_vault_serialization_missing_tags() -> None:
+    data = {
+        "metadata": {
+            "version": 1,
+            "created_at": "2023-01-01T00:00:00",
+            "updated_at": "2023-01-01T00:00:00",
+        },
+        "entries": [
+            {
+                "id": "123",
+                "service": "github",
+                "username": "lukasz",
+                "password": "secret",
+                "notes": None,
+                # "tags" is missing
+                "created_at": "2023-01-01T00:00:00",
+                "updated_at": "2023-01-01T00:00:00",
+            }
+        ],
+    }
+    vault = vault_from_dict(data)
+    assert vault.entries[0].tags == []
+
+
+def test_vault_serialization_valid_timestamps() -> None:
+    data = {
+        "metadata": {
+            "version": 1,
+            "created_at": "2023-01-01T00:00:00",
+            "updated_at": "2023-01-01T00:00:00",
+        },
+        "entries": [
+            {
+                "id": "123",
+                "service": "github",
+                "username": "lukasz",
+                "password": "secret",
+                "notes": None,
+                "tags": [],
+                "created_at": "2023-01-01T00:00:00",
+                "updated_at": "2023-01-01T00:00:00",
+            }
+        ],
+    }
+    vault = vault_from_dict(data)
+    assert vault.metadata.created_at.isoformat() == "2023-01-01T00:00:00"
+    assert vault.entries[0].created_at.isoformat() == "2023-01-01T00:00:00"
+
+
+def test_vault_serialization_invalid_timestamp_metadata() -> None:
+    data = {
+        "metadata": {
+            "version": 1,
+            "created_at": "invalid-date",
+            "updated_at": "2023-01-01T00:00:00",
+        },
+        "entries": [],
+    }
+    with pytest.raises(ValueError, match="Invalid ISO8601 timestamp for metadata created_at"):
+        vault_from_dict(data)
+
+
+def test_vault_serialization_invalid_timestamp_entry() -> None:
+    data = {
+        "metadata": {
+            "version": 1,
+            "created_at": "2023-01-01T00:00:00",
+            "updated_at": "2023-01-01T00:00:00",
+        },
+        "entries": [
+            {
+                "id": "123",
+                "service": "github",
+                "username": "lukasz",
+                "password": "secret",
+                "notes": None,
+                "tags": [],
+                "created_at": "invalid-date",
+                "updated_at": "2023-01-01T00:00:00",
+            }
+        ],
+    }
+    with pytest.raises(ValueError, match="Invalid ISO8601 timestamp for created_at in entry 123"):
+        vault_from_dict(data)
+
+
+def test_vault_serialization_missing_timestamp() -> None:
+    data = {
+        "metadata": {
+            "version": 1,
+            "created_at": "2023-01-01T00:00:00",
+            "updated_at": "2023-01-01T00:00:00",
+        },
+        "entries": [
+            {
+                "id": "123",
+                "service": "github",
+                "username": "lukasz",
+                "password": "secret",
+                "notes": None,
+                "tags": [],
+                # "created_at" is missing
+                "updated_at": "2023-01-01T00:00:00",
+            }
+        ],
+    }
+    with pytest.raises(ValueError, match="Missing required field"):
+        vault_from_dict(data)
