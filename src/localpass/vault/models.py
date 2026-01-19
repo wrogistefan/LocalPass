@@ -4,6 +4,12 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 
+class EntryNotFoundError(Exception):
+    """Raised when a vault entry with the given ID does not exist."""
+
+    pass
+
+
 @dataclass
 class VaultEntry:
     id: str
@@ -57,10 +63,10 @@ class Vault:
                 return entry
         return None
 
-    def remove_entry_by_id(self, entry_id: str) -> bool:
+    def remove_entry_by_id(self, entry_id: str) -> None:
         for i, entry in enumerate(self.entries):
             if entry.id == entry_id:
                 del self.entries[i]
                 self.metadata.updated_at = datetime.now(timezone.utc)
-                return True
-        return False
+                return
+        raise EntryNotFoundError(f"Entry with ID '{entry_id}' not found")
