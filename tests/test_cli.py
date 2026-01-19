@@ -135,7 +135,9 @@ def test_show_entry_with_password(runner: CliRunner) -> None:
         assert entry_id is not None, "Failed to parse entry ID from add command output"
 
         # Test show command with --show-password
-        result = runner.invoke(cli, ["show", test_vault, entry_id, "--show-password"], input="password\n")
+        result = runner.invoke(
+            cli, ["show", test_vault, entry_id, "--show-password"], input="password\n"
+        )
 
         assert result.exit_code == 0
         assert "Service: TestService" in result.output
