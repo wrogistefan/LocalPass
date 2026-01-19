@@ -57,10 +57,12 @@ def init(path: str) -> None:
         result = zxcvbn(password)
         if result["score"] < 3:
             click.echo("Error: Master password is too weak.")
-            if result["feedback"]["warning"]:
-                click.echo(f"Warning: {result['feedback']['warning']}")
-            if result["feedback"]["suggestions"]:
-                click.echo(f"Suggestion: {result['feedback']['suggestions'][0]}")
+            feedback = result.get("feedback", {})
+            if feedback.get("warning"):
+                click.echo(f"Warning: {feedback['warning']}")
+            suggestions = feedback.get("suggestions", [])
+            if suggestions:
+                click.echo(f"Suggestion: {suggestions[0]}")
             continue
         confirm_password = getpass.getpass("Confirm master password: ")
         if password != confirm_password:

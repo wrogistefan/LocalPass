@@ -461,26 +461,11 @@ def test_init_shows_feedback_for_weak_password(runner: CliRunner) -> None:
         assert Path(test_vault).exists()
 
 
-def test_init_accepts_strong_password_score_3(runner: CliRunner) -> None:
+def test_init_accepts_strong_password(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
 
-        # Using a strong password (score 4)
-        result = runner.invoke(
-            cli,
-            ["init", test_vault],
-            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
-        )
-
-        assert result.exit_code == 0
-        assert "Vault initialized successfully." in result.output
-        assert Path(test_vault).exists()
-
-
-def test_init_accepts_strong_password_score_4(runner: CliRunner) -> None:
-    with runner.isolated_filesystem():
-        test_vault = "test_vault.json"
-
+        # Using a strong password (score >= 3)
         result = runner.invoke(
             cli,
             ["init", test_vault],
