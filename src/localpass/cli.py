@@ -31,7 +31,7 @@ def load_vault(
 @click.group(invoke_without_command=True)
 @click.version_option()
 @click.pass_context
-def cli(ctx):
+def cli(ctx: click.Context) -> None:
     """LocalPass CLI for managing encrypted password vaults."""
     if ctx.invoked_subcommand is None:
         version = importlib.metadata.version("localpass")
