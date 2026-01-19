@@ -123,7 +123,9 @@ def test_vault_serialization_invalid_timestamp_metadata() -> None:
         },
         "entries": [],
     }
-    with pytest.raises(ValueError, match="Invalid ISO8601 timestamp for metadata created_at"):
+    with pytest.raises(
+        ValueError, match="Invalid ISO8601 timestamp for metadata created_at"
+    ):
         vault_from_dict(data)
 
 
@@ -147,7 +149,9 @@ def test_vault_serialization_invalid_timestamp_entry() -> None:
             }
         ],
     }
-    with pytest.raises(ValueError, match="Invalid ISO8601 timestamp for created_at in entry 123"):
+    with pytest.raises(
+        ValueError, match="Invalid ISO8601 timestamp for created_at in entry 123"
+    ):
         vault_from_dict(data)
 
 

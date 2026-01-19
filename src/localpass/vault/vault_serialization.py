@@ -46,11 +46,15 @@ def vault_from_dict(data: Dict[str, Any], path: str = "<in-memory>") -> Vault:
         try:
             created_at = datetime.fromisoformat(metadata_dict["created_at"])
         except ValueError:
-            raise ValueError(f"Invalid ISO8601 timestamp for metadata created_at in vault {path}: {metadata_dict['created_at']}")
+            raise ValueError(
+                f"Invalid ISO8601 timestamp for metadata created_at in vault {path}: {metadata_dict['created_at']}"
+            )
         try:
             updated_at = datetime.fromisoformat(metadata_dict["updated_at"])
         except ValueError:
-            raise ValueError(f"Invalid ISO8601 timestamp for metadata updated_at in vault {path}: {metadata_dict['updated_at']}")
+            raise ValueError(
+                f"Invalid ISO8601 timestamp for metadata updated_at in vault {path}: {metadata_dict['updated_at']}"
+            )
         metadata = VaultMetadata(
             version=metadata_dict["version"],
             created_at=created_at,
@@ -61,11 +65,15 @@ def vault_from_dict(data: Dict[str, Any], path: str = "<in-memory>") -> Vault:
             try:
                 entry_created_at = datetime.fromisoformat(e["created_at"])
             except ValueError:
-                raise ValueError(f"Invalid ISO8601 timestamp for created_at in entry {e.get('id', 'unknown')} in vault {path}: {e['created_at']}")
+                raise ValueError(
+                    f"Invalid ISO8601 timestamp for created_at in entry {e.get('id', 'unknown')} in vault {path}: {e['created_at']}"
+                )
             try:
                 entry_updated_at = datetime.fromisoformat(e["updated_at"])
             except ValueError:
-                raise ValueError(f"Invalid ISO8601 timestamp for updated_at in entry {e.get('id', 'unknown')} in vault {path}: {e['updated_at']}")
+                raise ValueError(
+                    f"Invalid ISO8601 timestamp for updated_at in entry {e.get('id', 'unknown')} in vault {path}: {e['updated_at']}"
+                )
             entries.append(
                 VaultEntry(
                     id=e["id"],
