@@ -1,4 +1,3 @@
-import importlib.metadata
 import uuid
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -785,7 +784,7 @@ def test_init_handles_value_error(runner: CliRunner) -> None:
             assert "Error: Test error" in result.stderr
 
 
-@patch('localpass.cli.importlib.metadata.version', return_value='1.0.0')
+@patch("localpass.cli.importlib.metadata.version", return_value="1.0.0")
 def test_cli_shows_version_when_no_args(mock_version, runner: CliRunner) -> None:
     result = runner.invoke(cli, [])
 

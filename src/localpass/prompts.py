@@ -12,7 +12,7 @@ def prompt_required_field(prompt_text: str) -> str:
     consistent formatting. Uses Click's prompt for consistent CLI behavior and
     cancellation handling via click.Abort.
     """
-    prompt_text = prompt_text.rstrip(':').rstrip()
+    prompt_text = prompt_text.rstrip(":").rstrip()
     while True:
         try:
             value: str = click.prompt(prompt_text)
