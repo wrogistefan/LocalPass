@@ -8,6 +8,22 @@ from click.testing import CliRunner
 from localpass.cli import cli
 
 
+def _setup_vault_with_entry(runner: CliRunner, vault_path: str, service: str = "TestService", username: str = "testuser", password: str = "testpass", notes: str = "Test notes") -> None:
+    """Helper to initialize a vault and add a single entry for testing."""
+    # Initialize vault
+    runner.invoke(
+        cli,
+        ["init", vault_path],
+        input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+    )
+    # Add entry
+    runner.invoke(
+        cli,
+        ["add", vault_path],
+        input=f"CorrectHorseBatteryStaple123!\n{service}\n{username}\n{password}\n{password}\n{notes}\n",
+    )
+
+
 @pytest.fixture
 def runner() -> CliRunner:
     return CliRunner()
@@ -1018,16 +1034,7 @@ def test_edit_entry(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Create vault and add an entry
-        runner.invoke(
-            cli,
-            ["init", test_vault],
-            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
-        )
-        runner.invoke(
-            cli,
-            ["add", test_vault],
-            input="CorrectHorseBatteryStaple123!\nOldService\nolduser\noldpass\noldpass\nOld notes\n",
-        )
+        _setup_vault_with_entry(runner, test_vault, "OldService", "olduser", "oldpass", "Old notes")
 
         # Test edit command
         result = runner.invoke(

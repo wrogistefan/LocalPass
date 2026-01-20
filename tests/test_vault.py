@@ -1,6 +1,7 @@
 import pytest
 
 from localpass.vault.models import EntryNotFoundError, Vault, VaultEntry, VaultMetadata
+from localpass.vault.service import VaultService
 from localpass.vault.vault_serialization import vault_from_dict
 
 
@@ -213,3 +214,26 @@ def test_vault_from_dict_non_utc_timezone() -> None:
 
     with pytest.raises(ValueError, match="must be in UTC timezone"):
         vault_from_dict(data, "test.json")
+
+
+def test_edit_entry_updates_timestamps() -> None:
+    """Test that editing an entry updates both entry and vault metadata timestamps."""
+    vault = Vault(metadata=VaultMetadata())
+    service = VaultService(None)  # type: ignore
+
+    # Add an entry
+    entry = service.add_entry(vault, "test-service", "test-user", "test-pass")
+    original_entry_updated_at = entry.updated_at
+    original_vault_updated_at = vault.metadata.updated_at
+
+    # Wait a bit to ensure timestamp difference
+    import time
+    time.sleep(0.01)
+
+    # Edit the entry
+    edited_entry = service.edit_entry(vault, entry.id, username="new-user")
+
+    # Check that timestamps were updated
+    assert edited_entry.updated_at > original_entry_updated_at
+    assert vault.metadata.updated_at > original_vault_updated_at
+    assert edited_entry.username == "new-user"
