@@ -4,6 +4,21 @@ from typing import Any, Dict
 from .models import Vault, VaultEntry, VaultMetadata
 
 
+def _compute_next_id_from_entries(entries: list[VaultEntry]) -> int:
+    if not entries:
+        return 1
+
+    numeric_ids: list[int] = []
+    for e in entries:
+        try:
+            numeric_ids.append(int(e.id))
+        except ValueError:
+            # Ignore non-numeric IDs
+            pass
+
+    return max(numeric_ids) + 1 if numeric_ids else 1
+
+
 def _parse_iso8601(path: str, field_desc: str, value: str) -> datetime:
     try:
         dt = datetime.fromisoformat(value)
@@ -107,36 +122,19 @@ def vault_from_dict(data: Dict[str, Any], path: str = "<in-memory>") -> Vault:
         raise ValueError(f"Invalid data format in vault file {path}: {exc}")
 
     # Handle next_id for backward compatibility
-    next_id = data.get("next_id")
-    if next_id is None:
-        # Backward compatibility: calculate next_id
-        if not entries:
-            next_id = 1
-        else:
-            numeric_ids = []
-            for e in entries:
-                try:
-                    numeric_ids.append(int(e.id))
-                except ValueError:
-                    pass  # Ignore non-numeric IDs
-            next_id = max(numeric_ids) + 1 if numeric_ids else 1
-    else:
-        # Validate next_id: coerce to int, enforce minimum of 1
+    raw_next_id = data.get("next_id")
+
+    if raw_next_id is not None:
         try:
-            next_id = int(next_id)
+            next_id = int(raw_next_id)
+        except (ValueError, TypeError):
+            next_id = _compute_next_id_from_entries(entries)
+        else:
+            # Enforce minimum of 1 in a single place
             if next_id < 1:
                 next_id = 1
-        except (ValueError, TypeError):
-            # If invalid, fall back to computed value
-            if not entries:
-                next_id = 1
-            else:
-                numeric_ids = []
-                for e in entries:
-                    try:
-                        numeric_ids.append(int(e.id))
-                    except ValueError:
-                        pass  # Ignore non-numeric IDs
-                next_id = max(numeric_ids) + 1 if numeric_ids else 1
+    else:
+        # Backward compatibility: calculate next_id
+        next_id = _compute_next_id_from_entries(entries)
 
     return Vault(metadata=metadata, entries=entries, next_id=next_id)

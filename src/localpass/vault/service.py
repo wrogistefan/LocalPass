@@ -31,6 +31,13 @@ class VaultService:
         entry = VaultEntry.create(service, username, password, notes)
         if entry_id:
             entry.id = entry_id
+            # Adjust next_id to prevent collisions with custom numeric IDs
+            try:
+                numeric_id = int(entry_id)
+                if numeric_id >= vault.next_id:
+                    vault.next_id = numeric_id + 1
+            except ValueError:
+                pass  # Non-numeric IDs don't affect next_id
         else:
             entry.id = str(vault.next_id)
             vault.next_id += 1

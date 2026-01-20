@@ -237,3 +237,19 @@ def test_edit_entry_updates_timestamps() -> None:
     assert edited_entry.updated_at > original_entry_updated_at
     assert vault.metadata.updated_at > original_vault_updated_at
     assert edited_entry.username == "new-user"
+
+
+def test_add_entry_assigns_sequential_ids() -> None:
+    """Test that VaultService.add_entry assigns sequential IDs correctly."""
+    vault = Vault(metadata=VaultMetadata(), next_id=1)
+    service = VaultService(None)  # type: ignore
+
+    # First entry: expect id "1" and next_id updated to 2
+    entry1 = service.add_entry(vault, "service1", "user1", "pass1")
+    assert entry1.id == "1"
+    assert vault.next_id == 2
+
+    # Second entry: expect id "2" and next_id updated to 3
+    entry2 = service.add_entry(vault, "service2", "user2", "pass2")
+    assert entry2.id == "2"
+    assert vault.next_id == 3

@@ -953,36 +953,16 @@ def test_remove_entry_with_nonexistent_numeric_id_fails(runner: CliRunner) -> No
             input="CorrectHorseBatteryStaple123!\n",
         )
 
-        assert result.exit_code != 0
-        assert "not found" in result.output.lower()
+        assert result.exit_code == 1
+        assert "Error: Entry with ID '999' not found." in result.stderr
 
 
 def test_edit_entry_with_defaults(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
 
-        # Initialize vault
-        result = runner.invoke(
-            cli,
-            ["init", test_vault],
-            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
-        )
-        assert result.exit_code == 0
-
-        # Add an entry
-        result = runner.invoke(
-            cli,
-            ["add", test_vault],
-            input=(
-                "CorrectHorseBatteryStaple123!\n"  # master password
-                "TestService\n"  # service
-                "original_user\n"  # username
-                "original_password\n"  # password
-                "original_password\n"  # confirm password
-                "Original notes\n"  # notes
-            ),
-        )
-        assert result.exit_code == 0
+        # Initialize vault and add an entry
+        _setup_vault_with_entry(runner, test_vault, "TestService", "original_user", "original_password", "Original notes")
 
         # First edit: change all fields so we know the current state
         result = runner.invoke(
