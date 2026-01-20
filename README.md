@@ -15,7 +15,7 @@ LocalPass is a minimal, offline password manager designed for local-first usage.
 - **📦 Zero Cloud**: No cloud sync, no telemetry, no remote storage
 - **📖 Open-Source**: Fully transparent codebase under Apache License 2.0
 
-## ✨ Features Included in v0.1.2
+## ✨ Features Included in v0.1.3
 
 - **Encrypted vault** using Argon2id + AES-GCM
 - **CLI commands**: `init`, `add`, `list`, `show`, `remove`
@@ -26,12 +26,14 @@ LocalPass is a minimal, offline password manager designed for local-first usage.
 - **Enhanced error handling** for corrupted or invalid vault files
 - **Short numeric ID support** - specify custom numeric IDs when adding entries
 - **Flexible ID handling** - mix custom IDs with auto-generated ones
+- **Password confirmation** - master password and entry passwords must be confirmed
+- **Required field validation** - service, username, and password fields are mandatory
 
-## 🚀 What's New in 0.1.2
+## 🚀 What's New in 0.1.3
 
-- **Short numeric ID support**: You can now specify short numeric IDs (1, 2, 3, etc.) when adding entries instead of relying solely on auto-generated ones. Use `--id <number>` to specify a custom ID.
-- **Custom ID handling**: The vault service now intelligently tracks `next_id` even when custom IDs are provided, ensuring auto-generated IDs don't conflict.
-- **Enhanced ID validation**: Better handling and validation of custom IDs with comprehensive edge case coverage.
+- **Password confirmation**: Master password must be confirmed during vault initialization, and entry passwords must be confirmed when adding entries.
+- **Required field validation**: Service, username, and password fields are now mandatory and cannot be left empty.
+- **Improved user prompts**: Enhanced CLI prompts with better error messages and validation for a smoother user experience.
 
 ## 📥 Installation
 
@@ -55,13 +57,15 @@ pip install -e .
 
 ```bash
 localpass init myvault.lp
+# You'll be prompted to enter and confirm a master password
 ```
 
 ### Add a new entry
 
 ```bash
 localpass add myvault.lp
-# You'll be prompted for service, username, password, and notes
+# You'll be prompted for master password, service, username, password (with confirmation), and notes
+# Use --id <number> to specify a custom numeric ID
 ```
 
 ### List all entries

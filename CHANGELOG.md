@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2026-01-20
+
+### Added
+
+- **Password confirmation**: Master password must be confirmed during vault initialization
+- **Required field validation**: Service, username, and password fields are now required and cannot be empty during entry addition
+- **Password confirmation for entries**: Passwords must be confirmed when adding new entries
+- **Improved user prompts**: Enhanced CLI prompts with better error messages and validation
+
+### Changed
+
+- Improved user experience with mandatory field validation and password confirmation prompts
+- Better error handling for empty required fields
+- `prompt_required_field` now uses Click helpers for consistent cancellation behavior and normalizes prompt text to handle colons gracefully
+
 ## [0.1.2] - 2026-01-20
 
 ### Added
@@ -67,6 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Edge cases in cryptographic operations
 - CLI argument parsing issues
 
+[0.1.3]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.1.3
 [0.1.2]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.1.2
 [0.1.1]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.1.1
 [0.1.0]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.1.0

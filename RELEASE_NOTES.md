@@ -1,21 +1,24 @@
-# LocalPass v0.1.2 Release Notes
+# LocalPass v0.1.3 Release Notes
 
 ## 🎉 Summary
 
-LocalPass v0.1.2 introduces support for short custom numeric IDs, giving users more flexibility in managing their password vault entries. This release improves ID handling and maintains full backward compatibility with existing vaults.
+LocalPass v0.1.3 enhances user experience with improved input validation and password confirmation prompts. This release adds mandatory field validation and password confirmation to prevent errors and improve security during vault operations.
 
 ## 🌟 Highlights
 
 ### New Features
 
-- **Short Numeric IDs**: Specify custom numeric IDs (1, 2, 3, etc.) when adding entries with the `--id` option
-- **Intelligent ID Tracking**: The vault now smartly tracks `next_id` to avoid conflicts between auto-generated and custom IDs
-- **Enhanced ID Validation**: Robust handling of edge cases when deserializing vault files
+- **Password Confirmation**: Master password must be confirmed during vault initialization, and entry passwords must be confirmed when adding entries
+- **Required Field Validation**: Service, username, and password fields are now mandatory and cannot be left empty
+- **Enhanced User Prompts**: Improved CLI prompts with better error messages and validation for a smoother user experience
 
 ### Example Usage
 
 ```bash
-# Add entry with auto-generated ID (default)
+# Initialize vault with password confirmation
+localpass init myvault.lp
+
+# Add entry with required field validation and password confirmation
 localpass add myvault.lp
 
 # Add entry with custom numeric ID
@@ -27,7 +30,7 @@ localpass add myvault.lp --id 1
 ### Using pip
 
 ```bash
-pip install localpass==0.1.2
+pip install localpass==0.1.3
 ```
 
 ### From source
@@ -35,7 +38,7 @@ pip install localpass==0.1.2
 ```bash
 git clone https://github.com/wrogistefan/LocalPass.git
 cd LocalPass
-git checkout v0.1.2
+git checkout v0.1.3
 pip install -e .
 ```
 
@@ -49,18 +52,20 @@ pip install -e .
 ## ✨ What's Changed
 
 ### Added
-- Support for short numeric custom IDs via `--id` option
-- Intelligent next_id computation considering both auto-generated and custom IDs
-- Comprehensive tests for ID handling edge cases
+- Password confirmation prompts for vault initialization and entry addition
+- Required field validation for service, username, and password fields
+- Enhanced user input prompts with better error handling
+- Improved CLI user experience with mandatory validation
 
-### Fixed
-- next_id deserialization now handles missing, invalid, and edge case values
-- Better validation when mixing custom and auto-generated IDs
+### Changed
+- Vault initialization now requires password confirmation
+- Entry addition now validates all required fields and confirms passwords
+- Better error messages for invalid or empty inputs
 
 ### Technical Details
-- Mixed auto-generated and custom IDs now work seamlessly
-- next_id correctly computes based on max existing numeric IDs
-- Backward compatible with existing vaults
+- New prompt functions for required fields and password confirmation
+- Enhanced input validation prevents empty or invalid entries
+- Backward compatible with existing vaults (no data format changes)
 
 ## 📚 Documentation
 
@@ -72,7 +77,7 @@ Comprehensive documentation is included in this release:
 
 ## ⚠️ Breaking Changes
 
-None for v0.1.2 - fully backward compatible with v0.1.1 vaults.
+None for v0.1.3 - fully backward compatible with previous versions. Existing vaults work without any changes.
 
 ## 🐛 Known Issues
 
@@ -83,7 +88,7 @@ None for v0.1.2 - fully backward compatible with v0.1.1 vaults.
 
 ## 📈 Upgrade Notes
 
-Existing vaults from v0.1.1 are fully compatible and can continue to use auto-generated IDs, or optionally use custom numeric IDs going forward.
+Existing vaults from v0.1.2 and earlier are fully compatible. The new validation features only affect user input during vault operations, not stored data.
 
 ## 🚀 Upgrade Steps
 

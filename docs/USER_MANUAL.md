@@ -41,16 +41,18 @@ localpass init myvault.lp
 ```
 
 **Process:**
-1. You'll be prompted to enter and confirm a master password (cannot be empty)
-2. If the password is left empty, you'll be prompted to enter a value
-3. A new vault file will be created at the specified path
-4. The vault uses Argon2id + AES-GCM encryption
+1. You'll be prompted to enter a master password (cannot be empty)
+2. The password strength will be checked and feedback provided if too weak
+3. You'll be prompted to confirm the master password
+4. If passwords don't match, you'll be prompted to try again
+5. A new vault file will be created at the specified path
+6. The vault uses Argon2id + AES-GCM encryption
 
 **Example:**
 ```bash
 $ localpass init secure_vault.lp
-Enter master password: 
-Confirm master password: 
+Enter new master password:
+Confirm master password:
 Vault initialized successfully.
 ```
 
@@ -65,19 +67,33 @@ localpass add myvault.lp
 
 **Process:**
 1. Enter your master password to unlock the vault
-2. Provide required entry details: Service, Username, Password (all required and cannot be empty), Notes (optional)
-3. If a required field is left empty, you'll be prompted to enter a value
-4. The entry will be added and assigned a unique ID
+2. Provide required entry details: Service, Username (both required and cannot be empty)
+3. Enter and confirm the password (required and cannot be empty)
+4. Optionally provide notes
+5. The entry will be added and assigned a unique ID (or custom ID if specified)
 
 **Example:**
 ```bash
 $ localpass add myvault.lp
-Enter master password: 
+Enter master password:
 Service: GitHub
 Username: myusername
-Password: 
+Enter password:
+Confirm password:
 Notes (optional): Personal account
 Entry added with ID: abc123
+```
+
+**Custom ID Example:**
+```bash
+$ localpass add myvault.lp --id 1
+Enter master password:
+Service: GitHub
+Username: myusername
+Enter password:
+Confirm password:
+Notes (optional): Personal account
+Entry added with ID: 1
 ```
 
 ### `localpass list <path>`
