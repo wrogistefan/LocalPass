@@ -1,6 +1,5 @@
 import getpass
 import importlib.metadata
-from datetime import datetime, timezone
 from pathlib import Path
 
 import click
@@ -197,8 +196,8 @@ def edit(path: str, id: str) -> None:
     username = click.prompt("Username", default=entry.username)
 
     # Only change the password when explicitly requested
-    change_input = click.prompt("Change password? (y/N)", default='n', type=str)
-    change_password = change_input.lower() in ('y', 'yes', '1', 'on', 'true', 't')
+    change_input = click.prompt("Change password? (y/N)", default="n", type=str)
+    change_password = change_input.lower() in ("y", "yes", "1", "on", "true", "t")
     if change_password:
         entry_password = prompt_password_with_confirmation("Enter new password: ")
     else:

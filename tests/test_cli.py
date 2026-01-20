@@ -902,11 +902,11 @@ def test_edit_entry_with_defaults(runner: CliRunner) -> None:
             ["add", test_vault],
             input=(
                 "CorrectHorseBatteryStaple123!\n"  # master password
-                "TestService\n"                    # service
-                "original_user\n"                  # username
-                "original_password\n"              # password
-                "original_password\n"              # confirm password
-                "Original notes\n"                 # notes
+                "TestService\n"  # service
+                "original_user\n"  # username
+                "original_password\n"  # password
+                "original_password\n"  # confirm password
+                "Original notes\n"  # notes
             ),
         )
         assert result.exit_code == 0
@@ -917,12 +917,12 @@ def test_edit_entry_with_defaults(runner: CliRunner) -> None:
             ["edit", test_vault, "1"],
             input=(
                 "CorrectHorseBatteryStaple123!\n"  # master password
-                "UpdatedService\n"                 # service
-                "updated_user\n"                   # username
-                "y\n"                              # change password
-                "updated_password\n"               # password
-                "updated_password\n"               # confirm password
-                "Updated notes\n"                  # notes
+                "UpdatedService\n"  # service
+                "updated_user\n"  # username
+                "y\n"  # change password
+                "updated_password\n"  # password
+                "updated_password\n"  # confirm password
+                "Updated notes\n"  # notes
             ),
         )
         assert result.exit_code == 0
@@ -933,10 +933,10 @@ def test_edit_entry_with_defaults(runner: CliRunner) -> None:
             ["edit", test_vault, "1"],
             input=(
                 "CorrectHorseBatteryStaple123!\n"  # master password
-                "\n"                               # keep service default (UpdatedService)
-                "second_user\n"                    # change username
-                "n\n"                              # don't change password
-                "\n"                               # keep notes default (Updated notes)
+                "\n"  # keep service default (UpdatedService)
+                "second_user\n"  # change username
+                "n\n"  # don't change password
+                "\n"  # keep notes default (Updated notes)
             ),
         )
         assert result.exit_code == 0
@@ -954,8 +954,6 @@ def test_edit_entry_with_defaults(runner: CliRunner) -> None:
         assert "Username: second_user" in output
         assert "Password: updated_password" in output
         assert "Notes: Updated notes" in output
-
-
 
 
 def test_edit_entry(runner: CliRunner) -> None:
