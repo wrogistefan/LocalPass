@@ -90,8 +90,11 @@ def init(path: str) -> None:
 
 @cli.command()
 @click.argument("path", type=click.Path())
-def add(path: str) -> None:
+@click.option("--id", "entry_id", help="Custom ID for the entry (optional)")
+def add(path: str, entry_id: str | None) -> None:
     """Add a new entry to the vault at PATH."""
+    if entry_id == "":
+        entry_id = None
     password = getpass.getpass("Enter master password: ")
 
     repo, service, vault = load_vault(path, password)
@@ -101,10 +104,10 @@ def add(path: str) -> None:
     entry_password = prompt_password_with_confirmation("Enter password: ")
     notes = click.prompt("Notes (optional)", default="")
 
-    entry = service.add_entry(
-        vault, service_name, username, entry_password, notes or None
-    )
     try:
+        entry = service.add_entry(
+            vault, service_name, username, entry_password, notes or None, entry_id
+        )
         repo.save(path, vault, password)
         click.echo(f"Entry added with ID: {entry.id}")
     except ValueError as e:
@@ -180,29 +183,33 @@ def remove(path: str, id: str) -> None:
 @click.argument("path", type=click.Path())
 @click.argument("id")
 def edit(path: str, id: str) -> None:
-    """Edit entry ID in the vault at PATH."""
+    """Edit entry fields in the vault at PATH."""
     password = getpass.getpass("Enter master password: ")
 
     repo, service, vault = load_vault(path, password)
 
+    # Prompt for new values, pre-filled with current
     entry = vault.get_entry_by_id(id)
     if entry is None:
         raise click.ClickException(f"Error: Entry with ID '{id}' not found.")
 
-    # Prompt for new values, pre-filled with current
     service_name = click.prompt("Service", default=entry.service)
     username = click.prompt("Username", default=entry.username)
-    entry_password = prompt_password_with_confirmation("Enter password: ")
+
+    # Only change the password when explicitly requested
+    change_input = click.prompt("Change password? (y/N)", default='n', type=str)
+    change_password = change_input.lower() in ('y', 'yes', '1', 'on', 'true', 't')
+    if change_password:
+        entry_password = prompt_password_with_confirmation("Enter new password: ")
+    else:
+        entry_password = entry.password
+
     notes = click.prompt("Notes (optional)", default=entry.notes or "")
 
-    # Update the entry
-    entry.service = service_name
-    entry.username = username
-    entry.password = entry_password
-    entry.notes = notes or None
-    entry.updated_at = datetime.now(timezone.utc)
-
     try:
+        service.edit_entry(
+            vault, id, service_name, username, entry_password, notes or None
+        )
         repo.save(path, vault, password)
         click.echo("Entry updated successfully.")
     except ValueError as e:
