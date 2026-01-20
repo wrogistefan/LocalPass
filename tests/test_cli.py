@@ -1,6 +1,7 @@
 import uuid
 from pathlib import Path
 from unittest.mock import Mock, patch
+import importlib.metadata
 
 import pytest
 from click.testing import CliRunner
@@ -789,7 +790,8 @@ def test_cli_shows_version_when_no_args(runner: CliRunner) -> None:
 
     assert result.exit_code == 0
     assert "version" in result.output.lower()
-    assert "0.1.1" in result.output
+    version = importlib.metadata.version("localpass")
+    assert version in result.output
 
 
 def test_add_entry_assigns_numeric_id(runner: CliRunner) -> None:
