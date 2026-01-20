@@ -23,7 +23,11 @@ class VaultEntry:
 
     @staticmethod
     def create(
-        service: str, username: str, password: str, notes: Optional[str] = None, id: Optional[str] = None
+        service: str,
+        username: str,
+        password: str,
+        notes: Optional[str] = None,
+        id: Optional[str] = None,
     ) -> "VaultEntry":
         return VaultEntry(
             id=id or str(uuid.uuid4()),
