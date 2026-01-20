@@ -838,6 +838,28 @@ def test_add_entry_with_custom_id(runner: CliRunner) -> None:
         assert "Entry added with ID: 1" in result.output
 
 
+def test_add_entry_with_empty_id(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # First create a vault
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+
+        # Test add command with empty ID (should be treated as None)
+        result = runner.invoke(
+            cli,
+            ["add", test_vault, "--id", ""],
+            input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\nmypass\nmypass\nMy notes\n",
+        )
+
+        assert result.exit_code == 0
+        assert "Entry added with ID:" in result.output
+
+
 def test_add_entry_with_conflicting_custom_id(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"

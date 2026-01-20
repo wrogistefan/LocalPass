@@ -374,6 +374,29 @@ def test_edit_entry_updates_timestamps() -> None:
     assert edited_entry.username == "new-user"
 
 
+def test_edit_entry_with_notes() -> None:
+    """Test that editing an entry with notes parameter updates the notes."""
+    vault = Vault(metadata=VaultMetadata())
+    service = VaultService(None)  # type: ignore
+
+    # Add an entry
+    entry = service.add_entry(vault, "test-service", "test-user", "test-pass", notes="old notes")
+
+    # Edit the entry with new notes
+    edited_entry = service.edit_entry(vault, entry.id, notes="new notes")
+
+    assert edited_entry.notes == "new notes"
+
+
+def test_edit_entry_not_found() -> None:
+    """Test that editing a non-existent entry raises EntryNotFoundError."""
+    vault = Vault(metadata=VaultMetadata())
+    service = VaultService(None)  # type: ignore
+
+    with pytest.raises(EntryNotFoundError, match="Entry with ID 'nonexistent' not found"):
+        service.edit_entry(vault, "nonexistent")
+
+
 def test_add_entry_assigns_sequential_ids() -> None:
     """Test that VaultService.add_entry assigns sequential IDs correctly."""
     vault = Vault(metadata=VaultMetadata(), next_id=1)
