@@ -28,7 +28,7 @@ def test_prompt_required_field_normalizes_whitespace() -> None:
     """
     captured_prompt_args: List[str] = []
 
-    def fake_prompt(text: str, **kwargs: object) -> str:  # type: ignore[override]
+    def fake_prompt(text: str, **kwargs: object) -> str:
         captured_prompt_args.append(text)
         return "  some value  "
 
@@ -49,14 +49,14 @@ def test_prompt_required_field_reprompts_on_empty_input() -> None:
     """
     calls: List[str] = []
 
-    def fake_prompt(text: str, **kwargs: object) -> str:  # type: ignore[override]
+    def fake_prompt(text: str, **kwargs: object) -> str:
         calls.append(text)
         # First response is whitespace-only, second is valid
         return "   " if len(calls) == 1 else " value "
 
     error_messages: List[str] = []
 
-    def fake_echo(message: str, **kwargs: object) -> None:  # type: ignore[override]
+    def fake_echo(message: str, **kwargs: object) -> None:
         error_messages.append(message)
 
     with patch("click.prompt", fake_prompt), patch("click.echo", fake_echo):
@@ -82,7 +82,7 @@ def test_prompt_required_field_handles_cancel() -> None:
 
     echoed: List[str] = []
 
-    def fake_echo(message: str, **kwargs: object) -> None:  # type: ignore[override]
+    def fake_echo(message: str, **kwargs: object) -> None:
         echoed.append(message)
 
     with patch("click.prompt", fake_prompt), patch("click.echo", fake_echo):

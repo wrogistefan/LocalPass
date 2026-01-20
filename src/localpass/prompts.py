@@ -27,11 +27,11 @@ def prompt_password_with_confirmation(
 ) -> str:
     """Prompt for password and confirmation, retrying until they match and password is not empty."""
     while True:
-        password = click.prompt(initial_prompt, hide_input=True)
+        password: str = click.prompt(initial_prompt, hide_input=True)
         if not password.strip():
             click.echo(ERROR_EMPTY_FIELD)
             continue
-        confirm = click.prompt(confirm_prompt, hide_input=True)
+        confirm: str = click.prompt(confirm_prompt, hide_input=True)
         if password == confirm:
             return password
         click.echo("Error: Passwords do not match. Please try again.")

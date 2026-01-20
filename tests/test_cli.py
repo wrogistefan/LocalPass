@@ -763,7 +763,7 @@ def test_init_handles_value_error(runner: CliRunner) -> None:
 
 
 @patch("localpass.cli.importlib.metadata.version", return_value="1.0.0")
-def test_cli_shows_version_when_no_args(mock_version, runner: CliRunner) -> None:
+def test_cli_shows_version_when_no_args(mock_version: Mock, runner: CliRunner) -> None:
     result = runner.invoke(cli, [])
 
     assert result.exit_code == 0
