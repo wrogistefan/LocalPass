@@ -201,6 +201,134 @@ def test_vault_from_dict_tags_not_list() -> None:
         vault_from_dict(data, "test.json")
 
 
+def test_vault_from_dict_missing_next_id_computes_from_entries() -> None:
+    """Test that missing next_id is computed from entries."""
+    data = {
+        "metadata": {
+            "version": 1,
+            "created_at": "2023-01-01T00:00:00Z",
+            "updated_at": "2023-01-01T00:00:00Z",
+        },
+        "entries": [
+            {
+                "id": "1",
+                "service": "test1",
+                "username": "user1",
+                "password": "pass1",
+                "notes": None,
+                "tags": [],
+                "created_at": "2023-01-01T00:00:00Z",
+                "updated_at": "2023-01-01T00:00:00Z",
+            },
+            {
+                "id": "3",
+                "service": "test3",
+                "username": "user3",
+                "password": "pass3",
+                "notes": None,
+                "tags": [],
+                "created_at": "2023-01-01T00:00:00Z",
+                "updated_at": "2023-01-01T00:00:00Z",
+            },
+        ],
+    }
+    vault = vault_from_dict(data)
+    # Should compute next_id as max(numeric IDs) + 1 = 4
+    assert vault.next_id == 4
+
+
+def test_vault_from_dict_invalid_next_id_falls_back_to_computed() -> None:
+    """Test that invalid next_id falls back to computed value."""
+    data = {
+        "metadata": {
+            "version": 1,
+            "created_at": "2023-01-01T00:00:00Z",
+            "updated_at": "2023-01-01T00:00:00Z",
+        },
+        "entries": [
+            {
+                "id": "5",
+                "service": "test",
+                "username": "user",
+                "password": "pass",
+                "notes": None,
+                "tags": [],
+                "created_at": "2023-01-01T00:00:00Z",
+                "updated_at": "2023-01-01T00:00:00Z",
+            },
+        ],
+        "next_id": "not-a-number",
+    }
+    vault = vault_from_dict(data)
+    # Should fall back to computed value: max(5) + 1 = 6
+    assert vault.next_id == 6
+
+
+def test_vault_from_dict_negative_next_id_normalized() -> None:
+    """Test that negative next_id is normalized to minimum."""
+    data = {
+        "metadata": {
+            "version": 1,
+            "created_at": "2023-01-01T00:00:00Z",
+            "updated_at": "2023-01-01T00:00:00Z",
+        },
+        "entries": [
+            {
+                "id": "2",
+                "service": "test",
+                "username": "user",
+                "password": "pass",
+                "notes": None,
+                "tags": [],
+                "created_at": "2023-01-01T00:00:00Z",
+                "updated_at": "2023-01-01T00:00:00Z",
+            },
+        ],
+        "next_id": -5,
+    }
+    vault = vault_from_dict(data)
+    # Should normalize to computed value: max(2) + 1 = 3
+    assert vault.next_id >= 1
+
+
+def test_compute_next_id_with_only_non_numeric_ids() -> None:
+    """Test _compute_next_id_from_entries with only non-numeric IDs."""
+    entries = [
+        VaultEntry(id="alpha", service="service1", username="user1", password="pass1"),
+        VaultEntry(id="beta", service="service2", username="user2", password="pass2"),
+    ]
+    
+    from localpass.vault.vault_serialization import _compute_next_id_from_entries
+    next_id = _compute_next_id_from_entries(entries)
+    
+    # Should default to 1 when no numeric IDs exist
+    assert next_id == 1
+
+
+def test_compute_next_id_with_mixed_ids() -> None:
+    """Test _compute_next_id_from_entries with mixed numeric/non-numeric IDs."""
+    entries = [
+        VaultEntry(id="1", service="service1", username="user1", password="pass1"),
+        VaultEntry(id="alpha", service="service2", username="user2", password="pass2"),
+        VaultEntry(id="5", service="service3", username="user3", password="pass3"),
+    ]
+    
+    from localpass.vault.vault_serialization import _compute_next_id_from_entries
+    next_id = _compute_next_id_from_entries(entries)
+    
+    # Should find max numeric ID (5) and return 6
+    assert next_id == 6
+
+
+def test_compute_next_id_with_empty_entries() -> None:
+    """Test _compute_next_id_from_entries with no entries."""
+    from localpass.vault.vault_serialization import _compute_next_id_from_entries
+    next_id = _compute_next_id_from_entries([])
+    
+    # Should default to 1
+    assert next_id == 1
+
+
 def test_vault_from_dict_non_utc_timezone() -> None:
     """Test that non-UTC timezone in metadata raises ValueError."""
     data = {
@@ -223,6 +351,7 @@ def test_edit_entry_updates_timestamps() -> None:
 
     # Add an entry
     entry = service.add_entry(vault, "test-service", "test-user", "test-pass")
+    original_entry_created_at = entry.created_at
     original_entry_updated_at = entry.updated_at
     original_vault_updated_at = vault.metadata.updated_at
 
@@ -234,9 +363,11 @@ def test_edit_entry_updates_timestamps() -> None:
     # Edit the entry
     edited_entry = service.edit_entry(vault, entry.id, username="new-user")
 
-    # Check that timestamps were updated
+    # Check that timestamps were updated correctly
     assert edited_entry.updated_at > original_entry_updated_at
     assert vault.metadata.updated_at > original_vault_updated_at
+    # created_at should remain unchanged when editing an entry
+    assert edited_entry.created_at == original_entry_created_at
     assert edited_entry.username == "new-user"
 
 
@@ -254,3 +385,65 @@ def test_add_entry_assigns_sequential_ids() -> None:
     entry2 = service.add_entry(vault, "service2", "user2", "pass2")
     assert entry2.id == "2"
     assert vault.next_id == 3
+
+
+def test_add_entry_custom_numeric_id_updates_next_id() -> None:
+    """Custom numeric entry_id should update vault.next_id appropriately."""
+    vault = Vault(metadata=VaultMetadata(), next_id=1)
+    service = VaultService(None)  # type: ignore
+
+    entry = service.add_entry(
+        vault,
+        "service",
+        "user",
+        "pass",
+        entry_id="5",
+    )
+
+    assert entry.id == "5"
+    # next_id should be updated past the custom numeric ID
+    assert vault.next_id == 6
+
+
+def test_add_entry_custom_non_numeric_id_leaves_next_id_unchanged() -> None:
+    """Non-numeric entry_id should leave vault.next_id unchanged."""
+    vault = Vault(metadata=VaultMetadata(), next_id=1)
+    service = VaultService(None)  # type: ignore
+
+    entry = service.add_entry(
+        vault,
+        "service",
+        "user",
+        "pass",
+        entry_id="foo",
+    )
+
+    assert entry.id == "foo"
+    # next_id should not be changed for non-numeric IDs
+    assert vault.next_id == 1
+
+
+def test_add_entry_duplicate_id_raises_value_error() -> None:
+    """Duplicate entry_id at the service level should raise ValueError."""
+    vault = Vault(metadata=VaultMetadata(), next_id=1)
+    service = VaultService(None)  # type: ignore
+
+    # First entry with a specific ID
+    first = service.add_entry(
+        vault,
+        "service1",
+        "user1",
+        "pass1",
+        entry_id="1",
+    )
+    assert first.id == "1"
+
+    # Second entry with the same ID should raise ValueError
+    with pytest.raises(ValueError):
+        service.add_entry(
+            vault,
+            "service2",
+            "user2",
+            "pass2",
+            entry_id="1",
+        )

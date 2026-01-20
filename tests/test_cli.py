@@ -18,17 +18,20 @@ def _setup_vault_with_entry(
 ) -> None:
     """Helper to initialize a vault and add a single entry for testing."""
     # Initialize vault
-    runner.invoke(
+    init_result = runner.invoke(
         cli,
         ["init", vault_path],
         input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
     )
+    assert init_result.exit_code == 0, f"Vault init failed: {init_result.output}"
+    
     # Add entry
-    runner.invoke(
+    add_result = runner.invoke(
         cli,
         ["add", vault_path],
         input=f"CorrectHorseBatteryStaple123!\n{service}\n{username}\n{password}\n{password}\n{notes}\n",
     )
+    assert add_result.exit_code == 0, f"Entry add failed: {add_result.output}"
 
 
 @pytest.fixture
@@ -860,6 +863,72 @@ def test_add_entry_with_conflicting_custom_id(runner: CliRunner) -> None:
 
         assert result.exit_code == 1
         assert "Error: Entry with ID '1' already exists." in result.stderr
+
+
+def test_add_entry_with_custom_non_numeric_id(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # First create a vault
+        init_result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+        assert init_result.exit_code == 0
+
+        # Add an entry with a non-numeric custom ID
+        add_result = runner.invoke(
+            cli,
+            ["add", test_vault, "--id", "abc"],
+            input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\nmypass\nmypass\nMy notes\n",
+        )
+
+        assert add_result.exit_code == 0
+        assert "Entry added with ID: abc" in add_result.output
+
+        # Show the entry and verify it exists
+        show_result = runner.invoke(
+            cli,
+            ["show", test_vault, "abc"],
+            input="CorrectHorseBatteryStaple123!\n",
+        )
+
+        assert show_result.exit_code == 0
+        assert "MyService" in show_result.output
+
+
+def test_add_entry_with_non_numeric_then_auto_id(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # First create a vault
+        init_result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+        assert init_result.exit_code == 0
+
+        # Add an entry with a non-numeric custom ID
+        custom_id_result = runner.invoke(
+            cli,
+            ["add", test_vault, "--id", "abc"],
+            input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\nmypass\nmypass\nMy notes\n",
+        )
+
+        assert custom_id_result.exit_code == 0
+        assert "Entry added with ID: abc" in custom_id_result.output
+
+        # Add another entry without specifying an ID to ensure next_id is still numeric (starting at 1)
+        auto_id_result = runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\nAnotherService\nanotheruser\nanotherpass\nanotherpass\nMore notes\n",
+        )
+
+        assert auto_id_result.exit_code == 0
+        assert "Entry added with ID: 1" in auto_id_result.output
 
 
 def test_show_entry_with_numeric_id(runner: CliRunner) -> None:
