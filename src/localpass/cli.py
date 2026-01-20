@@ -195,10 +195,8 @@ def edit(path: str, id: str) -> None:
     service_name = click.prompt("Service", default=entry.service)
     username = click.prompt("Username", default=entry.username)
 
-    # Only change the password when explicitly requested
-    change_input = click.prompt("Change password? (y/N)", default="n", type=str)
-    change_password = change_input.lower() in ("y", "yes", "1", "on", "true", "t")
-    if change_password:
+    # Only change the password if the user explicitly confirms
+    if click.confirm("Change password?", default=False):
         entry_password = prompt_password_with_confirmation("Enter new password: ")
     else:
         entry_password = entry.password

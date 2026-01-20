@@ -19,10 +19,9 @@ def test_vault_entry_create_defaults() -> None:
     entry1 = VaultEntry.create("service1", "user1", "pass1")
     entry2 = VaultEntry.create("service2", "user2", "pass2")
 
-    # id is non-empty and unique
-    assert entry1.id
-    assert entry2.id
-    assert entry1.id != entry2.id
+    # id is empty, to be set by service
+    assert entry1.id == ""
+    assert entry2.id == ""
 
     # notes defaults to None
     assert entry1.notes is None

@@ -120,5 +120,23 @@ def vault_from_dict(data: Dict[str, Any], path: str = "<in-memory>") -> Vault:
                 except ValueError:
                     pass  # Ignore non-numeric IDs
             next_id = max(numeric_ids) + 1 if numeric_ids else 1
+    else:
+        # Validate next_id: coerce to int, enforce minimum of 1
+        try:
+            next_id = int(next_id)
+            if next_id < 1:
+                next_id = 1
+        except (ValueError, TypeError):
+            # If invalid, fall back to computed value
+            if not entries:
+                next_id = 1
+            else:
+                numeric_ids = []
+                for e in entries:
+                    try:
+                        numeric_ids.append(int(e.id))
+                    except ValueError:
+                        pass  # Ignore non-numeric IDs
+                next_id = max(numeric_ids) + 1 if numeric_ids else 1
 
     return Vault(metadata=metadata, entries=entries, next_id=next_id)

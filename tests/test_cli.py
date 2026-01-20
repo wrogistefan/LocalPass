@@ -884,6 +884,63 @@ def test_show_entry_with_nonexistent_numeric_id(runner: CliRunner) -> None:
         assert "Error: Entry with ID '999' not found." in result.stderr
 
 
+def test_remove_entry_with_numeric_id_success(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault and add an entry
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+        runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\nmypass\nmypass\nMy notes\n",
+        )
+
+        # Remove entry using a short numeric ID string
+        result = runner.invoke(
+            cli,
+            ["remove", test_vault, "1"],
+            input="CorrectHorseBatteryStaple123!\n",
+        )
+
+        assert result.exit_code == 0
+        assert "Entry removed successfully." in result.output
+
+        # Confirm the entry is no longer shown
+        show_result = runner.invoke(
+            cli,
+            ["show", test_vault, "1"],
+            input="CorrectHorseBatteryStaple123!\n",
+        )
+        assert show_result.exit_code != 0
+
+
+def test_remove_entry_with_nonexistent_numeric_id_fails(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create an empty vault
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+
+        # Attempt to remove a non-existent numeric ID
+        result = runner.invoke(
+            cli,
+            ["remove", test_vault, "999"],
+            input="CorrectHorseBatteryStaple123!\n",
+        )
+
+        assert result.exit_code != 0
+        assert "not found" in result.output.lower()
+
+
 def test_edit_entry_with_defaults(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
