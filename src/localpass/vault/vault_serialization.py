@@ -4,6 +4,21 @@ from typing import Any, Dict
 from .models import Vault, VaultEntry, VaultMetadata
 
 
+def _compute_next_id_from_entries(entries: list[VaultEntry]) -> int:
+    if not entries:
+        return 1
+
+    numeric_ids: list[int] = []
+    for e in entries:
+        try:
+            numeric_ids.append(int(e.id))
+        except ValueError:
+            # Ignore non-numeric IDs
+            pass
+
+    return max(numeric_ids) + 1 if numeric_ids else 1
+
+
 def _parse_iso8601(path: str, field_desc: str, value: str) -> datetime:
     try:
         dt = datetime.fromisoformat(value)
@@ -29,6 +44,7 @@ def vault_to_dict(vault: Vault) -> Dict[str, Any]:
             "created_at": vault.metadata.created_at.isoformat(),
             "updated_at": vault.metadata.updated_at.isoformat(),
         },
+        "next_id": vault.next_id,
         "entries": [
             {
                 "id": e.id,
@@ -105,4 +121,20 @@ def vault_from_dict(data: Dict[str, Any], path: str = "<in-memory>") -> Vault:
     except ValueError as exc:
         raise ValueError(f"Invalid data format in vault file {path}: {exc}")
 
-    return Vault(metadata=metadata, entries=entries)
+    # Handle next_id for backward compatibility
+    raw_next_id = data.get("next_id")
+
+    if raw_next_id is not None:
+        try:
+            next_id = int(raw_next_id)
+        except (ValueError, TypeError):
+            next_id = _compute_next_id_from_entries(entries)
+        else:
+            # Enforce minimum of 1 in a single place
+            if next_id < 1:
+                next_id = 1
+    else:
+        # Backward compatibility: calculate next_id
+        next_id = _compute_next_id_from_entries(entries)
+
+    return Vault(metadata=metadata, entries=entries, next_id=next_id)

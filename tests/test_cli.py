@@ -1,3 +1,4 @@
+import importlib.metadata
 import uuid
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -6,6 +7,32 @@ import pytest
 from click.testing import CliRunner
 
 from localpass.cli import cli
+
+
+def _setup_vault_with_entry(
+    runner: CliRunner,
+    vault_path: str,
+    service: str = "TestService",
+    username: str = "testuser",
+    password: str = "testpass",
+    notes: str = "Test notes",
+) -> None:
+    """Helper to initialize a vault and add a single entry for testing."""
+    # Initialize vault
+    init_result = runner.invoke(
+        cli,
+        ["init", vault_path],
+        input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+    )
+    assert init_result.exit_code == 0, f"Vault init failed: {init_result.output}"
+
+    # Add entry
+    add_result = runner.invoke(
+        cli,
+        ["add", vault_path],
+        input=f"CorrectHorseBatteryStaple123!\n{service}\n{username}\n{password}\n{password}\n{notes}\n",
+    )
+    assert add_result.exit_code == 0, f"Entry add failed: {add_result.output}"
 
 
 @pytest.fixture
@@ -226,7 +253,7 @@ def test_show_nonexistent_entry(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 1
-        assert f"Entry with ID {fake_id} not found." in result.stderr
+        assert f"Error: Entry with ID '{fake_id}' not found." in result.stderr
 
 
 def test_add_entry_password_confirmation_success(runner: CliRunner) -> None:
@@ -366,6 +393,42 @@ def test_remove_nonexistent_entry(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 1
+
+
+def test_remove_entry_with_short_numeric_id(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault and add an entry with short ID
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+        runner.invoke(
+            cli,
+            ["add", test_vault, "--id", "1"],
+            input="CorrectHorseBatteryStaple123!\nTestService\ntestuser\ntestpass\ntestpass\nTest notes\n",
+        )
+
+        # Remove entry using short ID
+        result = runner.invoke(
+            cli,
+            ["remove", test_vault, "1"],
+            input="CorrectHorseBatteryStaple123!\n",
+        )
+
+        assert result.exit_code == 0
+
+        # Confirm subsequent show fails
+        result = runner.invoke(
+            cli,
+            ["show", test_vault, "1"],
+            input="CorrectHorseBatteryStaple123!\n",
+        )
+
+        assert result.exit_code == 1
+        assert "Error: Entry with ID '1' not found." in result.stderr
 
 
 def test_init_empty_password_rejected(runner: CliRunner) -> None:
@@ -727,4 +790,376 @@ def test_cli_shows_version_when_no_args(runner: CliRunner) -> None:
 
     assert result.exit_code == 0
     assert "version" in result.output.lower()
-    assert "0.1.1" in result.output
+    version = importlib.metadata.version("localpass")
+    assert version in result.output
+
+
+def test_add_entry_assigns_numeric_id(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # First create a vault
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+
+        # Test add command assigns ID 1
+        result = runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\nmypass\nmypass\nMy notes\n",
+        )
+
+        assert result.exit_code == 0
+        assert "Entry added with ID: 1" in result.output
+
+
+def test_add_entry_with_custom_id(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # First create a vault
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+
+        # Test add command with custom ID
+        result = runner.invoke(
+            cli,
+            ["add", test_vault, "--id", "1"],
+            input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\nmypass\nmypass\nMy notes\n",
+        )
+
+        assert result.exit_code == 0
+        assert "Entry added with ID: 1" in result.output
+
+
+def test_add_entry_with_empty_id(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # First create a vault
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+
+        # Test add command with empty ID (should be treated as None)
+        result = runner.invoke(
+            cli,
+            ["add", test_vault, "--id", ""],
+            input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\nmypass\nmypass\nMy notes\n",
+        )
+
+        assert result.exit_code == 0
+        assert "Entry added with ID:" in result.output
+
+
+def test_add_entry_with_conflicting_custom_id(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # First create a vault
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+
+        # Add first entry with custom ID
+        runner.invoke(
+            cli,
+            ["add", test_vault, "--id", "1"],
+            input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\nmypass\nmypass\nMy notes\n",
+        )
+
+        # Attempt to add another entry with the same ID
+        result = runner.invoke(
+            cli,
+            ["add", test_vault, "--id", "1"],
+            input="CorrectHorseBatteryStaple123!\nOtherService\notheruser\notherpass\notherpass\nOther notes\n",
+        )
+
+        assert result.exit_code == 1
+        assert "Error: Entry with ID '1' already exists." in result.stderr
+
+
+def test_add_entry_with_custom_non_numeric_id(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # First create a vault
+        init_result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+        assert init_result.exit_code == 0
+
+        # Add an entry with a non-numeric custom ID
+        add_result = runner.invoke(
+            cli,
+            ["add", test_vault, "--id", "abc"],
+            input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\nmypass\nmypass\nMy notes\n",
+        )
+
+        assert add_result.exit_code == 0
+        assert "Entry added with ID: abc" in add_result.output
+
+        # Show the entry and verify it exists
+        show_result = runner.invoke(
+            cli,
+            ["show", test_vault, "abc"],
+            input="CorrectHorseBatteryStaple123!\n",
+        )
+
+        assert show_result.exit_code == 0
+        assert "MyService" in show_result.output
+
+
+def test_add_entry_with_non_numeric_then_auto_id(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # First create a vault
+        init_result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+        assert init_result.exit_code == 0
+
+        # Add an entry with a non-numeric custom ID
+        custom_id_result = runner.invoke(
+            cli,
+            ["add", test_vault, "--id", "abc"],
+            input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\nmypass\nmypass\nMy notes\n",
+        )
+
+        assert custom_id_result.exit_code == 0
+        assert "Entry added with ID: abc" in custom_id_result.output
+
+        # Add another entry without specifying an ID to ensure next_id is still numeric (starting at 1)
+        auto_id_result = runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\nAnotherService\nanotheruser\nanotherpass\nanotherpass\nMore notes\n",
+        )
+
+        assert auto_id_result.exit_code == 0
+        assert "Entry added with ID: 1" in auto_id_result.output
+
+
+def test_show_entry_with_numeric_id(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault and add an entry
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+        runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\nTestService\ntestuser\ntestpass\ntestpass\nTest notes\n",
+        )
+
+        # Test show command with ID 1
+        result = runner.invoke(
+            cli, ["show", test_vault, "1"], input="CorrectHorseBatteryStaple123!\n"
+        )
+
+        assert result.exit_code == 0
+        assert "Service: TestService" in result.output
+
+
+def test_show_entry_with_nonexistent_numeric_id(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+
+        # Test show command with non-existent ID
+        result = runner.invoke(
+            cli, ["show", test_vault, "999"], input="CorrectHorseBatteryStaple123!\n"
+        )
+
+        assert result.exit_code == 1
+        assert "Error: Entry with ID '999' not found." in result.stderr
+
+
+def test_remove_entry_with_numeric_id_success(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault and add an entry
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+        runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\nmypass\nmypass\nMy notes\n",
+        )
+
+        # Remove entry using a short numeric ID string
+        result = runner.invoke(
+            cli,
+            ["remove", test_vault, "1"],
+            input="CorrectHorseBatteryStaple123!\n",
+        )
+
+        assert result.exit_code == 0
+        assert "Entry removed successfully." in result.output
+
+        # Confirm the entry is no longer shown
+        show_result = runner.invoke(
+            cli,
+            ["show", test_vault, "1"],
+            input="CorrectHorseBatteryStaple123!\n",
+        )
+        assert show_result.exit_code != 0
+
+
+def test_remove_entry_with_nonexistent_numeric_id_fails(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create an empty vault
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+
+        # Attempt to remove a non-existent numeric ID
+        result = runner.invoke(
+            cli,
+            ["remove", test_vault, "999"],
+            input="CorrectHorseBatteryStaple123!\n",
+        )
+
+        assert result.exit_code == 1
+        assert "Error: Entry with ID '999' not found." in result.stderr
+
+
+def test_edit_entry_with_defaults(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Initialize vault and add an entry
+        _setup_vault_with_entry(
+            runner,
+            test_vault,
+            "TestService",
+            "original_user",
+            "original_password",
+            "Original notes",
+        )
+
+        # First edit: change all fields so we know the current state
+        result = runner.invoke(
+            cli,
+            ["edit", test_vault, "1"],
+            input=(
+                "CorrectHorseBatteryStaple123!\n"  # master password
+                "UpdatedService\n"  # service
+                "updated_user\n"  # username
+                "y\n"  # change password
+                "updated_password\n"  # password
+                "updated_password\n"  # confirm password
+                "Updated notes\n"  # notes
+            ),
+        )
+        assert result.exit_code == 0
+
+        # Second edit: keep service the same (press Enter), change only username
+        result = runner.invoke(
+            cli,
+            ["edit", test_vault, "1"],
+            input=(
+                "CorrectHorseBatteryStaple123!\n"  # master password
+                "\n"  # keep service default (UpdatedService)
+                "second_user\n"  # change username
+                "n\n"  # don't change password
+                "\n"  # keep notes default (Updated notes)
+            ),
+        )
+        assert result.exit_code == 0
+
+        # Show the entry and verify only username changed while defaults held
+        show_result = runner.invoke(
+            cli,
+            ["show", test_vault, "1", "--show-password"],
+            input="CorrectHorseBatteryStaple123!\n",
+        )
+        assert show_result.exit_code == 0
+        output = show_result.output
+
+        assert "Service: UpdatedService" in output
+        assert "Username: second_user" in output
+        assert "Password: updated_password" in output
+        assert "Notes: Updated notes" in output
+
+
+def test_edit_entry(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault and add an entry
+        _setup_vault_with_entry(
+            runner, test_vault, "OldService", "olduser", "oldpass", "Old notes"
+        )
+
+        # Test edit command
+        result = runner.invoke(
+            cli,
+            ["edit", test_vault, "1"],
+            input="CorrectHorseBatteryStaple123!\nNewService\nnewuser\nn\nNew notes\n",
+        )
+
+        assert result.exit_code == 0
+        assert "Entry updated successfully." in result.output
+
+        # Verify the changes
+        show_result = runner.invoke(
+            cli, ["show", test_vault, "1"], input="CorrectHorseBatteryStaple123!\n"
+        )
+        assert "Service: NewService" in show_result.output
+        assert "Username: newuser" in show_result.output
+
+
+def test_edit_entry_with_nonexistent_short_id(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+
+        # Test edit command with non-existent short ID
+        result = runner.invoke(
+            cli,
+            ["edit", test_vault, "999"],
+            input="CorrectHorseBatteryStaple123!\n",
+        )
+
+        assert result.exit_code == 1
+        assert "Error: Entry with ID '999' not found." in result.stderr

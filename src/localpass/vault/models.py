@@ -1,4 +1,3 @@
-import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import List, Optional
@@ -26,7 +25,7 @@ class VaultEntry:
         service: str, username: str, password: str, notes: Optional[str] = None
     ) -> "VaultEntry":
         return VaultEntry(
-            id=str(uuid.uuid4()),
+            id="",  # Will be set by service
             service=service,
             username=username,
             password=password,
@@ -45,6 +44,7 @@ class VaultMetadata:
 class Vault:
     metadata: VaultMetadata
     entries: List[VaultEntry] = field(default_factory=list)
+    next_id: int = 1
 
     def add_entry(self, entry: VaultEntry) -> None:
         self.entries.append(entry)
@@ -69,4 +69,4 @@ class Vault:
                 del self.entries[i]
                 self.metadata.updated_at = datetime.now(timezone.utc)
                 return
-        raise EntryNotFoundError(f"Entry with ID '{entry_id}' not found")
+        raise EntryNotFoundError(f"Entry with ID '{entry_id}' not found.")
