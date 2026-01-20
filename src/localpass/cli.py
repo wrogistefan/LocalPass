@@ -1,4 +1,3 @@
-import getpass
 import importlib.metadata
 from pathlib import Path
 
@@ -59,7 +58,7 @@ def init(path: str) -> None:
             return
 
     while True:
-        password = getpass.getpass("Enter new master password: ")
+        password = click.prompt("Enter new master password", hide_input=True)
         if not password.strip():
             click.echo("Error: This field cannot be empty. Please enter a value.")
             continue
@@ -73,7 +72,7 @@ def init(path: str) -> None:
             if suggestions:
                 click.echo(f"Suggestion: {suggestions[0]}")
             continue
-        confirm = getpass.getpass("Confirm master password: ")
+        confirm = click.prompt("Confirm master password", hide_input=True)
         if password != confirm:
             click.echo("Error: Passwords do not match. Please try again.")
             continue
@@ -94,7 +93,7 @@ def add(path: str, entry_id: str | None) -> None:
     """Add a new entry to the vault at PATH."""
     if entry_id == "":
         entry_id = None
-    password = getpass.getpass("Enter master password: ")
+    password = click.prompt("Enter master password", hide_input=True)
 
     repo, service, vault = load_vault(path, password)
 
@@ -117,7 +116,7 @@ def add(path: str, entry_id: str | None) -> None:
 @click.argument("path", type=click.Path())
 def list(path: str) -> None:
     """List entries in the vault at PATH."""
-    password = getpass.getpass("Enter master password: ")
+    password = click.prompt("Enter master password", hide_input=True)
 
     repo, service, vault = load_vault(path, password)
 
@@ -138,7 +137,7 @@ def list(path: str) -> None:
 )
 def show(path: str, id: str, show_password: bool) -> None:
     """Show details of entry ID in the vault at PATH."""
-    password = getpass.getpass("Enter master password: ")
+    password = click.prompt("Enter master password", hide_input=True)
 
     repo, service, vault = load_vault(path, password)
 
@@ -163,7 +162,7 @@ def show(path: str, id: str, show_password: bool) -> None:
 @click.argument("id")
 def remove(path: str, id: str) -> None:
     """Remove entry ID from the vault at PATH."""
-    password = getpass.getpass("Enter master password: ")
+    password = click.prompt("Enter master password", hide_input=True)
 
     repo, service, vault = load_vault(path, password)
 
@@ -183,7 +182,7 @@ def remove(path: str, id: str) -> None:
 @click.argument("id")
 def edit(path: str, id: str) -> None:
     """Edit entry fields in the vault at PATH."""
-    password = getpass.getpass("Enter master password: ")
+    password = click.prompt("Enter master password", hide_input=True)
 
     repo, service, vault = load_vault(path, password)
 

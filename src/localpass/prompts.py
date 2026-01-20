@@ -1,5 +1,3 @@
-import getpass
-
 import click
 
 ERROR_EMPTY_FIELD = "Error: This field cannot be empty. Please enter a value."
@@ -20,7 +18,7 @@ def prompt_required_field(prompt_text: str) -> str:
             click.echo("\nOperation cancelled.")
             raise
         if value.strip():
-            return value
+            return value.strip()
         click.echo(ERROR_EMPTY_FIELD)
 
 
@@ -29,11 +27,11 @@ def prompt_password_with_confirmation(
 ) -> str:
     """Prompt for password and confirmation, retrying until they match and password is not empty."""
     while True:
-        password = getpass.getpass(initial_prompt)
+        password = click.prompt(initial_prompt, hide_input=True)
         if not password.strip():
             click.echo(ERROR_EMPTY_FIELD)
             continue
-        confirm = getpass.getpass(confirm_prompt)
+        confirm = click.prompt(confirm_prompt, hide_input=True)
         if password == confirm:
             return password
         click.echo("Error: Passwords do not match. Please try again.")
