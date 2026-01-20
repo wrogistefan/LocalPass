@@ -1,4 +1,7 @@
-from unittest.mock import patch
+from typing import List
+
+import click
+import pytest
 
 from localpass.prompts import prompt_required_field
 
@@ -15,3 +18,74 @@ def test_prompt_required_field_empty_then_success() -> None:
             result = prompt_required_field("Enter value: ")
             assert result == "test"
             assert mock_echo.call_count == 2  # Two empty inputs
+
+
+def test_prompt_required_field_normalizes_whitespace() -> None:
+    """
+    When the user enters text with surrounding whitespace, prompt_required_field
+    should return the normalized value.
+    """
+    captured_prompt_args: List[str] = []
+
+    def fake_prompt(text: str, **kwargs: object) -> str:  # type: ignore[override]
+        captured_prompt_args.append(text)
+        return "  some value  "
+
+    with patch("click.prompt", fake_prompt):
+        result = prompt_required_field("Test field")
+
+    # We expect prompt_required_field to have actually prompted the user
+    assert captured_prompt_args == ["Test field"]
+    # And to normalize the whitespace around the input
+    assert result == "some value"
+
+
+def test_prompt_required_field_reprompts_on_empty_input() -> None:
+    """
+    When the user enters empty/whitespace input, prompt_required_field should:
+    - Emit an error message
+    - Re-prompt until a non-empty value is provided
+    """
+    calls: List[str] = []
+
+    def fake_prompt(text: str, **kwargs: object) -> str:  # type: ignore[override]
+        calls.append(text)
+        # First response is whitespace-only, second is valid
+        return "   " if len(calls) == 1 else " value "
+
+    error_messages: List[str] = []
+
+    def fake_echo(message: str, **kwargs: object) -> None:  # type: ignore[override]
+        error_messages.append(message)
+
+    with patch("click.prompt", fake_prompt), patch("click.echo", fake_echo):
+        result = prompt_required_field("Test field")
+
+    # Should have prompted twice: once for the empty value and once for the valid value
+    assert calls == ["Test field", "Test field"]
+    # Should ultimately return the normalized valid value
+    assert result == "value"
+    # Should have emitted at least one error message to stderr/stdout
+    assert error_messages, "Expected an error message when empty input is provided"
+
+
+def test_prompt_required_field_handles_cancel() -> None:
+    """
+    When the user cancels the prompt (click.Abort), prompt_required_field should:
+    - Emit 'Operation cancelled.' message
+    - Propagate the abort (e.g. via click.Abort or SystemExit)
+    """
+    def fake_prompt(text: str, **kwargs: object) -> str:  # type: ignore[override]
+        raise click.Abort()
+
+    echoed: List[str] = []
+
+    def fake_echo(message: str, **kwargs: object) -> None:  # type: ignore[override]
+        echoed.append(message)
+
+    with patch("click.prompt", fake_prompt), patch("click.echo", fake_echo):
+        with pytest.raises((click.Abort, SystemExit)):
+            prompt_required_field("Test field")
+
+    # Ensure our UX message was printed
+    assert any("Operation cancelled." in msg for msg in echoed)

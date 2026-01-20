@@ -29,14 +29,14 @@ def _setup_vault_with_entry(
     add_result = runner.invoke(
         cli,
         ["add", vault_path],
-        input=f"CorrectHorseBatteryStaple123!\n{service}\n{username}\n{password}\n{password}\n{notes}\n",
+        input=f"{service}\n{username}\n{password}\n{password}\n{notes}\n",
     )
     assert add_result.exit_code == 0, f"Entry add failed: {add_result.output}"
 
 
 @pytest.fixture
 def runner() -> CliRunner:
-    return CliRunner(mix_stderr=False)
+    return CliRunner()
 
 
 def test_init_creates_file(runner: CliRunner) -> None:
@@ -88,7 +88,7 @@ def test_add_entry(runner: CliRunner) -> None:
         result = runner.invoke(
             cli,
             ["add", test_vault],
-            input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\nmypass\nmypass\nMy notes\n",
+            input="MyService\nmyuser\nmypass\nmypass\nMy notes\n",
         )
 
         assert result.exit_code == 0
@@ -117,7 +117,7 @@ def test_add_entry_handles_value_error(runner: CliRunner) -> None:
             result = runner.invoke(
                 cli,
                 ["add", test_vault],
-                input="CorrectHorseBatteryStaple123!\ntestpass\ntestpass\n",
+                input="testpass\ntestpass\n",
             )
 
             assert result.exit_code != 0
@@ -137,22 +137,21 @@ def test_list_entries(runner: CliRunner) -> None:
         runner.invoke(
             cli,
             ["add", test_vault],
-            input="CorrectHorseBatteryStaple123!\ntestpass\ntestpass\n",
+            input="Service1\nuser1\npass1\npass1\nnotes1\n",
         )
         runner.invoke(
             cli,
             ["add", test_vault],
-            input="CorrectHorseBatteryStaple123!\ntestpass\ntestpass\n",
+            input="Service2\nuser2\npass2\npass2\nnotes2\n",
         )
 
         # Test list command
-        result = runner.invoke(
-            cli, ["list", test_vault], input="CorrectHorseBatteryStaple123!\n"
-        )
+        result = runner.invoke(cli, ["list", test_vault])
 
         assert result.exit_code == 0
         assert "ID\tService\tUsername\tTags" in result.output
-        assert "testpass" in result.output
+        assert "Service1" in result.output
+        assert "Service2" in result.output
 
 
 def test_show_entry(runner: CliRunner) -> None:
@@ -168,22 +167,20 @@ def test_show_entry(runner: CliRunner) -> None:
         add_result = runner.invoke(
             cli,
             ["add", test_vault],
-            input="CorrectHorseBatteryStaple123!\ntestpass\n",
+            input="CorrectHorseBatteryStaple123!\nTestService\nTestUser\nTestPass\nTestPass\nTestNotes\n",
         )
 
         # Extract the entry ID from the add result
         entry_id = add_result.output.split("ID: ")[1].strip()
 
         # Test show command
-        result = runner.invoke(
-            cli, ["show", test_vault, entry_id], input="CorrectHorseBatteryStaple123!\n"
-        )
+        result = runner.invoke(cli, ["show", test_vault, entry_id])
 
         assert result.exit_code == 0
-        assert "Service: testpass" in result.output
-        assert "Username: testpass" in result.output
+        assert "Service: TestService" in result.output
+        assert "Username: TestUser" in result.output
         assert "Password: [hidden]" in result.output
-        assert "Notes: testpass" in result.output
+        assert "Notes: TestNotes" in result.output
 
 
 def test_show_entry_with_password(runner: CliRunner) -> None:
@@ -199,7 +196,7 @@ def test_show_entry_with_password(runner: CliRunner) -> None:
         add_result = runner.invoke(
             cli,
             ["add", test_vault],
-            input="CorrectHorseBatteryStaple123!\ntestpass\ntestpass\n",
+            input="TestService\nTestUser\nTestPass\nTestPass\nTestNotes\n",
         )
         assert add_result.exit_code == 0
 
@@ -213,16 +210,14 @@ def test_show_entry_with_password(runner: CliRunner) -> None:
 
         # Test show command with --show-password
         result = runner.invoke(
-            cli,
-            ["show", test_vault, entry_id, "--show-password"],
-            input="CorrectHorseBatteryStaple123!\n",
+            cli, ["show", test_vault, entry_id, "--show-password"]
         )
 
         assert result.exit_code == 0
-        assert "Service: testpass" in result.output
-        assert "Username: testpass" in result.output
-        assert "Password: testpass" in result.output
-        assert "Notes: testpass" in result.output
+        assert "Service: TestService" in result.output
+        assert "Username: TestUser" in result.output
+        assert "Password: TestPass" in result.output
+        assert "Notes: TestNotes" in result.output
 
 
 def test_show_nonexistent_entry(runner: CliRunner) -> None:
@@ -398,15 +393,11 @@ def test_remove_entry_with_short_numeric_id(runner: CliRunner) -> None:
         runner.invoke(
             cli,
             ["add", test_vault, "--id", "1"],
-            input="CorrectHorseBatteryStaple123!\nTestService\ntestuser\ntestpass\ntestpass\nTest notes\n",
+            input="TestService\ntestuser\ntestpass\ntestpass\nTest notes\n",
         )
 
         # Remove entry using short ID
-        result = runner.invoke(
-            cli,
-            ["remove", test_vault, "1"],
-            input="CorrectHorseBatteryStaple123!\n",
-        )
+        result = runner.invoke(cli, ["remove", test_vault, "1"])
 
         assert result.exit_code == 0
 
@@ -962,9 +953,7 @@ def test_show_entry_with_numeric_id(runner: CliRunner) -> None:
         )
 
         # Test show command with ID 1
-        result = runner.invoke(
-            cli, ["show", test_vault, "1"], input="CorrectHorseBatteryStaple123!\n"
-        )
+        result = runner.invoke(cli, ["show", test_vault, "1"])
 
         assert result.exit_code == 0
         assert "Service: TestService" in result.output
