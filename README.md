@@ -15,7 +15,7 @@ LocalPass is a minimal, offline password manager designed for local-first usage.
 - **📦 Zero Cloud**: No cloud sync, no telemetry, no remote storage
 - **📖 Open-Source**: Fully transparent codebase under Apache License 2.0
 
-## ✨ Features Included in v0.1.1
+## ✨ Features Included in v0.1.2
 
 - **Encrypted vault** using Argon2id + AES-GCM
 - **CLI commands**: `init`, `add`, `list`, `show`, `remove`
@@ -24,15 +24,14 @@ LocalPass is a minimal, offline password manager designed for local-first usage.
 - **Robust serialization** with defaults for missing fields (e.g., tags default to empty list)
 - **Timestamp validation** for vault data integrity
 - **Enhanced error handling** for corrupted or invalid vault files
+- **Short numeric ID support** - specify custom numeric IDs when adding entries
+- **Flexible ID handling** - mix custom IDs with auto-generated ones
 
-## 🚀 What's New in 0.1.1
+## 🚀 What's New in 0.1.2
 
-- **Improved serialization robustness**: Vault deserialization now handles missing optional fields gracefully (e.g., `tags` defaults to an empty list if absent).
-- **Enhanced timestamp validation**: Invalid datetime formats in vault files are now properly detected and reported.
-- **Better error handling**: Corrupted ciphertext and invalid JSON in encrypted vaults are handled with clear error messages.
-- **Repository safety warnings**: Plaintext repository usage now emits warnings to prevent accidental use in production.
-- **Vault API enhancements**: Added `remove_entry_by_id` method for precise entry removal by ID.
-- **Test coverage increased**: Comprehensive tests added for edge cases, serialization defaults, and error paths, achieving >95% coverage.
+- **Short numeric ID support**: You can now specify short numeric IDs (1, 2, 3, etc.) when adding entries instead of relying solely on auto-generated ones. Use `--id <number>` to specify a custom ID.
+- **Custom ID handling**: The vault service now intelligently tracks `next_id` even when custom IDs are provided, ensuring auto-generated IDs don't conflict.
+- **Enhanced ID validation**: Better handling and validation of custom IDs with comprehensive edge case coverage.
 
 ## 📥 Installation
 

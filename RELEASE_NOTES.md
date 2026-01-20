@@ -1,32 +1,33 @@
-# LocalPass v0.1.0 Release Notes
+# LocalPass v0.1.2 Release Notes
 
 ## 🎉 Summary
 
-LocalPass v0.1.0 is the first public release of our local-first, offline password manager. This release introduces a complete CLI-based password management system with strong encryption and zero cloud dependencies.
+LocalPass v0.1.2 introduces support for short custom numeric IDs, giving users more flexibility in managing their password vault entries. This release improves ID handling and maintains full backward compatibility with existing vaults.
 
 ## 🌟 Highlights
 
-### Core Features
+### New Features
 
-- **🔒 Secure Vault**: Argon2id + AES-GCM encryption for maximum security
-- **📦 CLI Interface**: Full command-line interface for vault management
-- **💻 Cross-platform**: Works on Windows, macOS, and Linux
-- **📖 Open Source**: Fully transparent codebase under Apache License 2.0
+- **Short Numeric IDs**: Specify custom numeric IDs (1, 2, 3, etc.) when adding entries with the `--id` option
+- **Intelligent ID Tracking**: The vault now smartly tracks `next_id` to avoid conflicts between auto-generated and custom IDs
+- **Enhanced ID Validation**: Robust handling of edge cases when deserializing vault files
 
-### CLI Commands
+### Example Usage
 
-- `localpass init <path>` - Initialize a new encrypted vault
-- `localpass add <path>` - Add new entries to your vault
-- `localpass list <path>` - List all entries in your vault
-- `localpass show <path> <id>` - Show detailed entry information
-- `localpass remove <path> <id>` - Remove entries from your vault
+```bash
+# Add entry with auto-generated ID (default)
+localpass add myvault.lp
+
+# Add entry with custom numeric ID
+localpass add myvault.lp --id 1
+```
 
 ## 📥 Installation
 
 ### Using pip
 
 ```bash
-pip install localpass
+pip install localpass==0.1.2
 ```
 
 ### From source
@@ -34,6 +35,7 @@ pip install localpass
 ```bash
 git clone https://github.com/wrogistefan/LocalPass.git
 cd LocalPass
+git checkout v0.1.2
 pip install -e .
 ```
 
@@ -43,6 +45,22 @@ pip install -e .
 - **AES-256-GCM** authenticated encryption
 - **Random salt and nonce** for each vault
 - **Zero telemetry** and no cloud dependencies
+
+## ✨ What's Changed
+
+### Added
+- Support for short numeric custom IDs via `--id` option
+- Intelligent next_id computation considering both auto-generated and custom IDs
+- Comprehensive tests for ID handling edge cases
+
+### Fixed
+- next_id deserialization now handles missing, invalid, and edge case values
+- Better validation when mixing custom and auto-generated IDs
+
+### Technical Details
+- Mixed auto-generated and custom IDs now work seamlessly
+- next_id correctly computes based on max existing numeric IDs
+- Backward compatible with existing vaults
 
 ## 📚 Documentation
 
@@ -54,7 +72,7 @@ Comprehensive documentation is included in this release:
 
 ## ⚠️ Breaking Changes
 
-None for v0.1.0 - this is the initial release.
+None for v0.1.2 - fully backward compatible with v0.1.1 vaults.
 
 ## 🐛 Known Issues
 
@@ -63,9 +81,16 @@ None for v0.1.0 - this is the initial release.
 - No import/export functionality
 - No password recovery mechanism
 
-## 🚀 Upgrade Notes
+## 📈 Upgrade Notes
 
-This is the first public release, so no upgrade path is needed.
+Existing vaults from v0.1.1 are fully compatible and can continue to use auto-generated IDs, or optionally use custom numeric IDs going forward.
+
+## 🚀 Upgrade Steps
+
+```bash
+pip install --upgrade localpass
+# Your existing vaults will work without any changes!
+```
 
 ## 📋 Future Roadmap
 
@@ -74,6 +99,7 @@ This is the first public release, so no upgrade path is needed.
 - Import/export functionality
 - Browser integration
 - Multi-factor authentication
+- Support for non-numeric custom IDs
 
 ## 🤝 Contributing
 
@@ -85,7 +111,7 @@ LocalPass is licensed under the Apache License 2.0. See [LICENSE](LICENSE) for d
 
 ## 🙏 Acknowledgments
 
-Thank you to all contributors, testers, and early adopters who helped make this release possible!
+Thank you to all contributors, reviewers, and community members who helped improve this release!
 
 ## 📬 Contact
 
