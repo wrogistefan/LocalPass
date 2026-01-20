@@ -23,7 +23,8 @@ class VaultService:
         username: str,
         password: str,
         notes: Optional[str] = None,
+        id: Optional[str] = None,
     ) -> VaultEntry:
-        entry = VaultEntry.create(service, username, password, notes)
+        entry = VaultEntry.create(service, username, password, notes, id)
         vault.add_entry(entry)
         return entry

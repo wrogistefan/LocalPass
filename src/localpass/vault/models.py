@@ -23,10 +23,10 @@ class VaultEntry:
 
     @staticmethod
     def create(
-        service: str, username: str, password: str, notes: Optional[str] = None
+        service: str, username: str, password: str, notes: Optional[str] = None, id: Optional[str] = None
     ) -> "VaultEntry":
         return VaultEntry(
-            id=str(uuid.uuid4()),
+            id=id or str(uuid.uuid4()),
             service=service,
             username=username,
             password=password,
@@ -69,4 +69,4 @@ class Vault:
                 del self.entries[i]
                 self.metadata.updated_at = datetime.now(timezone.utc)
                 return
-        raise EntryNotFoundError(f"Entry with ID '{entry_id}' not found")
+        raise EntryNotFoundError(f"Entry with ID '{entry_id}' not found.")

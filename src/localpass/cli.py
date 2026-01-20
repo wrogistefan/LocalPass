@@ -1,5 +1,6 @@
 import getpass
 import importlib.metadata
+from datetime import datetime, timezone
 from pathlib import Path
 
 import click
@@ -89,7 +90,8 @@ def init(path: str) -> None:
 
 @cli.command()
 @click.argument("path", type=click.Path())
-def add(path: str) -> None:
+@click.option("--id", "entry_id", help="Custom ID for the entry (optional)")
+def add(path: str, entry_id: str | None) -> None:
     """Add a new entry to the vault at PATH."""
     password = getpass.getpass("Enter master password: ")
 
@@ -101,7 +103,7 @@ def add(path: str) -> None:
     notes = click.prompt("Notes (optional)", default="")
 
     entry = service.add_entry(
-        vault, service_name, username, entry_password, notes or None
+        vault, service_name, username, entry_password, notes or None, entry_id
     )
     try:
         repo.save(path, vault, password)
@@ -141,7 +143,7 @@ def show(path: str, id: str, show_password: bool) -> None:
 
     entry = vault.get_entry_by_id(id)
     if entry is None:
-        raise click.ClickException(f"Entry with ID {id} not found.")
+        raise click.ClickException(f"Error: Entry with ID '{id}' not found.")
 
     click.echo(f"Service: {entry.service}")
     click.echo(f"Username: {entry.username}")
@@ -172,4 +174,37 @@ def remove(path: str, id: str) -> None:
         except ValueError as e:
             raise click.ClickException(f"Error: {e}")
     except EntryNotFoundError as e:
+        raise click.ClickException(f"Error: {e}")
+
+
+@cli.command()
+@click.argument("path", type=click.Path())
+@click.argument("id")
+def edit(path: str, id: str) -> None:
+    """Edit entry ID in the vault at PATH."""
+    password = getpass.getpass("Enter master password: ")
+
+    repo, service, vault = load_vault(path, password)
+
+    entry = vault.get_entry_by_id(id)
+    if entry is None:
+        raise click.ClickException(f"Error: Entry with ID '{id}' not found.")
+
+    # Prompt for new values, pre-filled with current
+    service_name = click.prompt("Service", default=entry.service)
+    username = click.prompt("Username", default=entry.username)
+    entry_password = prompt_password_with_confirmation("Enter password: ")
+    notes = click.prompt("Notes (optional)", default=entry.notes or "")
+
+    # Update the entry
+    entry.service = service_name
+    entry.username = username
+    entry.password = entry_password
+    entry.notes = notes or None
+    entry.updated_at = datetime.now(timezone.utc)
+
+    try:
+        repo.save(path, vault, password)
+        click.echo("Entry updated successfully.")
+    except ValueError as e:
         raise click.ClickException(f"Error: {e}")
