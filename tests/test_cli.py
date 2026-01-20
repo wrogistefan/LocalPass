@@ -1,7 +1,7 @@
+import importlib.metadata
 import uuid
 from pathlib import Path
 from unittest.mock import Mock, patch
-import importlib.metadata
 
 import pytest
 from click.testing import CliRunner
