@@ -797,8 +797,6 @@ def test_show_entry_with_nonexistent_numeric_id(runner: CliRunner) -> None:
         assert "Error: Entry with ID '999' not found." in result.stderr
 
 
-
-
 def test_edit_entry(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
