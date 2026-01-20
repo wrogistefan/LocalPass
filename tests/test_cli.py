@@ -24,7 +24,7 @@ def _setup_vault_with_entry(
         input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
     )
     assert init_result.exit_code == 0, f"Vault init failed: {init_result.output}"
-    
+
     # Add entry
     add_result = runner.invoke(
         cli,

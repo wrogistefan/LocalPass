@@ -297,10 +297,11 @@ def test_compute_next_id_with_only_non_numeric_ids() -> None:
         VaultEntry(id="alpha", service="service1", username="user1", password="pass1"),
         VaultEntry(id="beta", service="service2", username="user2", password="pass2"),
     ]
-    
+
     from localpass.vault.vault_serialization import _compute_next_id_from_entries
+
     next_id = _compute_next_id_from_entries(entries)
-    
+
     # Should default to 1 when no numeric IDs exist
     assert next_id == 1
 
@@ -312,10 +313,11 @@ def test_compute_next_id_with_mixed_ids() -> None:
         VaultEntry(id="alpha", service="service2", username="user2", password="pass2"),
         VaultEntry(id="5", service="service3", username="user3", password="pass3"),
     ]
-    
+
     from localpass.vault.vault_serialization import _compute_next_id_from_entries
+
     next_id = _compute_next_id_from_entries(entries)
-    
+
     # Should find max numeric ID (5) and return 6
     assert next_id == 6
 
@@ -323,8 +325,9 @@ def test_compute_next_id_with_mixed_ids() -> None:
 def test_compute_next_id_with_empty_entries() -> None:
     """Test _compute_next_id_from_entries with no entries."""
     from localpass.vault.vault_serialization import _compute_next_id_from_entries
+
     next_id = _compute_next_id_from_entries([])
-    
+
     # Should default to 1
     assert next_id == 1
 
