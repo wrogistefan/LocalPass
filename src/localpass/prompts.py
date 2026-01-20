@@ -6,13 +6,19 @@ ERROR_EMPTY_FIELD = "Error: This field cannot be empty. Please enter a value."
 
 
 def prompt_required_field(prompt_text: str) -> str:
-    """Prompt for a required field, retrying until a non-empty value is provided."""
+    """Prompt for a required field, retrying until a non-empty value is provided.
+
+    The prompt_text is normalized by stripping trailing colons and spaces to ensure
+    consistent formatting. Uses Click's prompt for consistent CLI behavior and
+    cancellation handling via click.Abort.
+    """
+    prompt_text = prompt_text.rstrip(':').rstrip()
     while True:
         try:
-            value: str = input(f"{prompt_text.rstrip(':').rstrip()}: ")
-        except (EOFError, KeyboardInterrupt):
+            value: str = click.prompt(prompt_text)
+        except click.Abort:
             click.echo("\nOperation cancelled.")
-            raise SystemExit(1)
+            raise
         if value.strip():
             return value
         click.echo(ERROR_EMPTY_FIELD)

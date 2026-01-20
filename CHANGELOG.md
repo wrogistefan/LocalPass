@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improved user experience with mandatory field validation and password confirmation prompts
 - Better error handling for empty required fields
+- `prompt_required_field` now uses Click helpers for consistent cancellation behavior and normalizes prompt text to handle colons gracefully
 
 ## [0.1.2] - 2026-01-20
 
