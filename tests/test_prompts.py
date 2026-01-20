@@ -76,6 +76,7 @@ def test_prompt_required_field_handles_cancel() -> None:
     - Emit 'Operation cancelled.' message
     - Propagate the abort (e.g. via click.Abort or SystemExit)
     """
+
     def fake_prompt(text: str, **kwargs: object) -> str:  # type: ignore[override]
         raise click.Abort()
 

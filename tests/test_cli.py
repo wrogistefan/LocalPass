@@ -145,7 +145,9 @@ def test_list_entries(runner: CliRunner) -> None:
         )
 
         # Test list command
-        result = runner.invoke(cli, ["list", test_vault], input="CorrectHorseBatteryStaple123!\n")
+        result = runner.invoke(
+            cli, ["list", test_vault], input="CorrectHorseBatteryStaple123!\n"
+        )
 
         assert result.exit_code == 0
         assert "ID\tService\tUsername\tTags" in result.output
@@ -173,7 +175,9 @@ def test_show_entry(runner: CliRunner) -> None:
         entry_id = add_result.output.split("ID: ")[1].strip()
 
         # Test show command
-        result = runner.invoke(cli, ["show", test_vault, entry_id], input="CorrectHorseBatteryStaple123!\n")
+        result = runner.invoke(
+            cli, ["show", test_vault, entry_id], input="CorrectHorseBatteryStaple123!\n"
+        )
 
         assert result.exit_code == 0
         assert "Service: TestService" in result.output
@@ -209,7 +213,9 @@ def test_show_entry_with_password(runner: CliRunner) -> None:
 
         # Test show command with --show-password
         result = runner.invoke(
-            cli, ["show", test_vault, entry_id, "--show-password"], input="CorrectHorseBatteryStaple123!\n"
+            cli,
+            ["show", test_vault, entry_id, "--show-password"],
+            input="CorrectHorseBatteryStaple123!\n",
         )
 
         assert result.exit_code == 0
@@ -395,7 +401,9 @@ def test_remove_entry_with_short_numeric_id(runner: CliRunner) -> None:
         )
 
         # Remove entry using short ID
-        result = runner.invoke(cli, ["remove", test_vault, "1"], input="CorrectHorseBatteryStaple123!\n")
+        result = runner.invoke(
+            cli, ["remove", test_vault, "1"], input="CorrectHorseBatteryStaple123!\n"
+        )
 
         assert result.exit_code == 0
 
@@ -941,7 +949,9 @@ def test_show_entry_with_numeric_id(runner: CliRunner) -> None:
         )
 
         # Test show command with ID 1
-        result = runner.invoke(cli, ["show", test_vault, "1"], input="CorrectHorseBatteryStaple123!\n")
+        result = runner.invoke(
+            cli, ["show", test_vault, "1"], input="CorrectHorseBatteryStaple123!\n"
+        )
 
         assert result.exit_code == 0
         assert "Service: TestService" in result.output
