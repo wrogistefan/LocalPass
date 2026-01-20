@@ -8,7 +8,14 @@ from click.testing import CliRunner
 from localpass.cli import cli
 
 
-def _setup_vault_with_entry(runner: CliRunner, vault_path: str, service: str = "TestService", username: str = "testuser", password: str = "testpass", notes: str = "Test notes") -> None:
+def _setup_vault_with_entry(
+    runner: CliRunner,
+    vault_path: str,
+    service: str = "TestService",
+    username: str = "testuser",
+    password: str = "testpass",
+    notes: str = "Test notes",
+) -> None:
     """Helper to initialize a vault and add a single entry for testing."""
     # Initialize vault
     runner.invoke(
@@ -962,7 +969,14 @@ def test_edit_entry_with_defaults(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Initialize vault and add an entry
-        _setup_vault_with_entry(runner, test_vault, "TestService", "original_user", "original_password", "Original notes")
+        _setup_vault_with_entry(
+            runner,
+            test_vault,
+            "TestService",
+            "original_user",
+            "original_password",
+            "Original notes",
+        )
 
         # First edit: change all fields so we know the current state
         result = runner.invoke(
@@ -1014,7 +1028,9 @@ def test_edit_entry(runner: CliRunner) -> None:
         test_vault = "test_vault.json"
 
         # Create vault and add an entry
-        _setup_vault_with_entry(runner, test_vault, "OldService", "olduser", "oldpass", "Old notes")
+        _setup_vault_with_entry(
+            runner, test_vault, "OldService", "olduser", "oldpass", "Old notes"
+        )
 
         # Test edit command
         result = runner.invoke(

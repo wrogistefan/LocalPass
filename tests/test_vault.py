@@ -228,6 +228,7 @@ def test_edit_entry_updates_timestamps() -> None:
 
     # Wait a bit to ensure timestamp difference
     import time
+
     time.sleep(0.01)
 
     # Edit the entry
