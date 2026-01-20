@@ -1,5 +1,6 @@
 import uuid
 from pathlib import Path
+from unittest.mock import Mock, patch
 
 import pytest
 from click.testing import CliRunner
@@ -72,6 +73,35 @@ def test_add_entry(runner: CliRunner) -> None:
 
         assert result.exit_code == 0
         assert "Entry added with ID:" in result.output
+
+
+def test_add_entry_handles_value_error(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # First create a vault
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+
+        mock_repo = Mock()
+        mock_service = Mock()
+        mock_repo.save.side_effect = ValueError("Test save error")
+
+        with patch(
+            "localpass.cli.get_vault_service", return_value=(mock_repo, mock_service)
+        ):
+            # Test add command
+            result = runner.invoke(
+                cli,
+                ["add", test_vault],
+                input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\nmypass\nmypass\nMy notes\n",
+            )
+
+            assert result.exit_code != 0
+            assert "Error: Test save error" in result.output
 
 
 def test_list_entries(runner: CliRunner) -> None:
@@ -278,6 +308,44 @@ def test_remove_entry(runner: CliRunner) -> None:
         assert "ServiceToRemove" not in list_result.output
 
 
+def test_remove_entry_handles_value_error(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault and add an entry
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+        add_result = runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\nServiceToRemove\nuser\npass\npass\n\n",
+        )
+
+        # Extract the entry ID from the add result
+        entry_id = add_result.output.split("ID: ")[1].strip()
+
+        mock_repo = Mock()
+        mock_service = Mock()
+        mock_repo.save.side_effect = ValueError("Test save error")
+
+        with patch(
+            "localpass.cli.get_vault_service", return_value=(mock_repo, mock_service)
+        ):
+
+            # Test remove command
+            result = runner.invoke(
+                cli,
+                ["remove", test_vault, entry_id],
+                input="CorrectHorseBatteryStaple123!\n",
+            )
+
+            assert result.exit_code != 0
+            assert "Error: Test save error" in result.output
+
+
 def test_remove_nonexistent_entry(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
@@ -430,10 +498,7 @@ def test_add_with_wrong_master_password(runner: CliRunner) -> None:
         )
 
         assert result.exit_code != 0
-        assert "invalid password" in result.stderr.lower()
-
-
-def test_list_with_wrong_master_password(runner: CliRunner) -> None:
+        assert "incorrect master password" in result.stderr.lower()
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
 
@@ -450,7 +515,7 @@ def test_list_with_wrong_master_password(runner: CliRunner) -> None:
         )
 
         assert result.exit_code != 0
-        assert "invalid password" in result.stderr.lower()
+    assert "incorrect master password" in result.stderr.lower()
 
 
 def test_show_with_wrong_master_password(runner: CliRunner) -> None:
@@ -478,7 +543,7 @@ def test_show_with_wrong_master_password(runner: CliRunner) -> None:
         )
 
         assert result.exit_code != 0
-        assert "invalid password" in result.stderr.lower()
+        assert "incorrect master password" in result.stderr.lower()
 
 
 def test_remove_with_wrong_master_password(runner: CliRunner) -> None:
@@ -506,7 +571,7 @@ def test_remove_with_wrong_master_password(runner: CliRunner) -> None:
         )
 
         assert result.exit_code != 0
-        assert "invalid password" in result.stderr.lower()
+        assert "incorrect master password" in result.stderr.lower()
 
 
 def test_list_with_corrupted_vault_file(runner: CliRunner) -> None:
@@ -534,6 +599,20 @@ def test_list_with_corrupted_vault_file(runner: CliRunner) -> None:
         # The CLI should surface a predictable, user-friendly error
         assert "error" in result.stderr.lower()
         assert "vault" in result.stderr.lower()
+
+
+def test_list_nonexistent_vault_file(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        nonexistent_vault = "nonexistent.json"
+
+        result = runner.invoke(
+            cli,
+            ["list", nonexistent_vault],
+            input="password\n",
+        )
+
+        assert result.exit_code != 0
+        assert "error" in result.stderr.lower()
 
 
 def test_init_rejects_empty_password(runner: CliRunner) -> None:
@@ -620,6 +699,27 @@ def test_init_accepts_strong_password(runner: CliRunner) -> None:
         assert result.exit_code == 0
         assert "Vault initialized successfully." in result.output
         assert Path(test_vault).exists()
+
+
+def test_init_handles_value_error(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        mock_repo = Mock()
+        mock_service = Mock()
+        mock_service.create_vault.side_effect = ValueError("Test error")
+
+        with patch(
+            "localpass.cli.get_vault_service", return_value=(mock_repo, mock_service)
+        ):
+            result = runner.invoke(
+                cli,
+                ["init", test_vault],
+                input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+            )
+
+            assert result.exit_code != 0
+            assert "Error: Test error" in result.output
 
 
 def test_cli_shows_version_when_no_args(runner: CliRunner) -> None:

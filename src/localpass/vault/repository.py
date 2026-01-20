@@ -12,6 +12,18 @@ from .models import Vault
 from .vault_serialization import vault_from_dict, vault_to_dict
 
 
+class IncorrectPasswordError(ValueError):
+    """Raised when the master password is incorrect."""
+
+    pass
+
+
+class CorruptedVaultError(ValueError):
+    """Raised when the vault file is corrupted or unreadable."""
+
+    pass
+
+
 @runtime_checkable
 class VaultRepository(Protocol):
     """Abstract interface for vault repositories."""
@@ -67,7 +79,7 @@ class PlaintextVaultRepository(VaultRepository):
         except FileNotFoundError:
             raise ValueError(f"Vault file not found: {path}")
         except json.JSONDecodeError as exc:
-            raise ValueError(f"Invalid JSON in vault file {path}: {exc}")
+            raise CorruptedVaultError(f"Invalid JSON in vault file {path}: {exc}")
 
         return vault_from_dict(data, str(path))
 
@@ -107,28 +119,41 @@ class EncryptedVaultRepository:
         except FileNotFoundError:
             raise ValueError(f"Vault file not found: {path}")
         except json.JSONDecodeError as exc:
-            raise ValueError(f"Invalid JSON in vault file {path}: {exc}")
+            raise CorruptedVaultError(f"Invalid JSON in vault file {path}: {exc}")
 
         try:
             salt = base64.b64decode(data["salt"])
             nonce = base64.b64decode(data["nonce"])
             ciphertext = base64.b64decode(data["ciphertext"])
         except KeyError as exc:
-            raise ValueError(f"Missing required field in encrypted vault data: {exc}")
+            raise CorruptedVaultError(
+                f"Missing required field in encrypted vault data: {exc}"
+            )
         except Exception:
-            raise ValueError("Invalid password or corrupted vault")
+            raise CorruptedVaultError("Vault file is corrupted or unreadable.")
 
         key = derive_key(master_password, salt)
         try:
             plaintext = decrypt(ciphertext, key, nonce)
-        except InvalidTag:
-            raise ValueError("Invalid password or corrupted vault")
+        except InvalidTag as exc:
+            # Authentication tag mismatch can indicate either an incorrect password
+            # or tampered/corrupted ciphertext. We distinguish based on context:
+            # - If the vault file parsed successfully and all required fields are present,
+            #   InvalidTag most likely means incorrect password.
+            # - If corruption is detected elsewhere, CorruptedVaultError is raised first.
+            raise IncorrectPasswordError("Incorrect master password.") from exc
+        except (ValueError, TypeError) as exc:
+            # ValueError: decryption produced invalid data
+            # TypeError: argument type mismatch
+            raise CorruptedVaultError(f"Decryption failed: {exc}") from exc
         except Exception as exc:
-            raise ValueError(f"Decryption failed: {exc}")
+            raise CorruptedVaultError(
+                f"Decryption failed (unexpected error): {exc}"
+            ) from exc
 
         try:
             obj = json.loads(plaintext.decode("utf-8"))
         except json.JSONDecodeError as exc:
-            raise ValueError(f"Invalid JSON in decrypted vault data: {exc}")
+            raise CorruptedVaultError(f"Invalid JSON in decrypted vault data: {exc}")
 
         return vault_from_dict(obj, str(path))

@@ -7,7 +7,11 @@ from zxcvbn import zxcvbn
 
 from .prompts import prompt_password_with_confirmation, prompt_required_field
 from .vault.models import EntryNotFoundError, Vault
-from .vault.repository import EncryptedVaultRepository
+from .vault.repository import (
+    CorruptedVaultError,
+    EncryptedVaultRepository,
+    IncorrectPasswordError,
+)
 from .vault.service import VaultService
 
 
@@ -26,6 +30,10 @@ def load_vault(
     try:
         vault = service.load_vault(path, password)
         return repo, service, vault
+    except IncorrectPasswordError:
+        raise click.ClickException("Error: Incorrect master password.")
+    except CorruptedVaultError:
+        raise click.ClickException("Error: Vault file is corrupted or unreadable.")
     except ValueError as e:
         raise click.ClickException(f"Error: {e}")
 
