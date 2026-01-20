@@ -380,7 +380,9 @@ def test_edit_entry_with_notes() -> None:
     service = VaultService(None)  # type: ignore
 
     # Add an entry
-    entry = service.add_entry(vault, "test-service", "test-user", "test-pass", notes="old notes")
+    entry = service.add_entry(
+        vault, "test-service", "test-user", "test-pass", notes="old notes"
+    )
 
     # Edit the entry with new notes
     edited_entry = service.edit_entry(vault, entry.id, notes="new notes")
@@ -393,7 +395,9 @@ def test_edit_entry_not_found() -> None:
     vault = Vault(metadata=VaultMetadata())
     service = VaultService(None)  # type: ignore
 
-    with pytest.raises(EntryNotFoundError, match="Entry with ID 'nonexistent' not found"):
+    with pytest.raises(
+        EntryNotFoundError, match="Entry with ID 'nonexistent' not found"
+    ):
         service.edit_entry(vault, "nonexistent")
 
 
