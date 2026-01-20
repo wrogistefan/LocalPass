@@ -4,13 +4,13 @@ from localpass.prompts import prompt_required_field
 
 
 def test_prompt_required_field_success() -> None:
-    with patch("click.prompt", return_value="test"):
+    with patch("builtins.input", return_value="test"):
         result = prompt_required_field("Enter value: ")
         assert result == "test"
 
 
 def test_prompt_required_field_empty_then_success() -> None:
-    with patch("click.prompt", side_effect=["", "  ", "test"]):
+    with patch("builtins.input", side_effect=["", "  ", "test"]):
         with patch("click.echo") as mock_echo:
             result = prompt_required_field("Enter value: ")
             assert result == "test"
