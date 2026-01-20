@@ -90,8 +90,7 @@ def init(path: str) -> None:
 
 @cli.command()
 @click.argument("path", type=click.Path())
-@click.option("--id", "entry_id", help="Custom ID for the entry (optional)")
-def add(path: str, entry_id: str | None) -> None:
+def add(path: str) -> None:
     """Add a new entry to the vault at PATH."""
     password = getpass.getpass("Enter master password: ")
 
@@ -103,7 +102,7 @@ def add(path: str, entry_id: str | None) -> None:
     notes = click.prompt("Notes (optional)", default="")
 
     entry = service.add_entry(
-        vault, service_name, username, entry_password, notes or None, entry_id
+        vault, service_name, username, entry_password, notes or None
     )
     try:
         repo.save(path, vault, password)

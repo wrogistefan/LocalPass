@@ -730,7 +730,7 @@ def test_cli_shows_version_when_no_args(runner: CliRunner) -> None:
     assert "0.1.1" in result.output
 
 
-def test_add_entry_with_custom_id(runner: CliRunner) -> None:
+def test_add_entry_assigns_numeric_id(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
 
@@ -741,10 +741,10 @@ def test_add_entry_with_custom_id(runner: CliRunner) -> None:
             input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
         )
 
-        # Test add command with custom ID
+        # Test add command assigns ID 1
         result = runner.invoke(
             cli,
-            ["add", test_vault, "--id", "1"],
+            ["add", test_vault],
             input="CorrectHorseBatteryStaple123!\nMyService\nmyuser\nmypass\nmypass\nMy notes\n",
         )
 
@@ -752,11 +752,11 @@ def test_add_entry_with_custom_id(runner: CliRunner) -> None:
         assert "Entry added with ID: 1" in result.output
 
 
-def test_show_entry_with_short_numeric_id(runner: CliRunner) -> None:
+def test_show_entry_with_numeric_id(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
 
-        # Create vault and add an entry with short ID
+        # Create vault and add an entry
         runner.invoke(
             cli,
             ["init", test_vault],
@@ -764,11 +764,11 @@ def test_show_entry_with_short_numeric_id(runner: CliRunner) -> None:
         )
         runner.invoke(
             cli,
-            ["add", test_vault, "--id", "1"],
+            ["add", test_vault],
             input="CorrectHorseBatteryStaple123!\nTestService\ntestuser\ntestpass\ntestpass\nTest notes\n",
         )
 
-        # Test show command with short ID
+        # Test show command with ID 1
         result = runner.invoke(
             cli, ["show", test_vault, "1"], input="CorrectHorseBatteryStaple123!\n"
         )
@@ -777,7 +777,7 @@ def test_show_entry_with_short_numeric_id(runner: CliRunner) -> None:
         assert "Service: TestService" in result.output
 
 
-def test_show_entry_with_nonexistent_short_id(runner: CliRunner) -> None:
+def test_show_entry_with_nonexistent_numeric_id(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
 
@@ -788,7 +788,7 @@ def test_show_entry_with_nonexistent_short_id(runner: CliRunner) -> None:
             input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
         )
 
-        # Test show command with non-existent short ID
+        # Test show command with non-existent ID
         result = runner.invoke(
             cli, ["show", test_vault, "999"], input="CorrectHorseBatteryStaple123!\n"
         )
@@ -797,32 +797,6 @@ def test_show_entry_with_nonexistent_short_id(runner: CliRunner) -> None:
         assert "Error: Entry with ID '999' not found." in result.stderr
 
 
-def test_show_entry_with_long_id_still_works(runner: CliRunner) -> None:
-    with runner.isolated_filesystem():
-        test_vault = "test_vault.json"
-
-        # Create vault and add an entry with auto-generated UUID
-        runner.invoke(
-            cli,
-            ["init", test_vault],
-            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
-        )
-        add_result = runner.invoke(
-            cli,
-            ["add", test_vault],
-            input="CorrectHorseBatteryStaple123!\nTestService\ntestuser\ntestpass\ntestpass\nTest notes\n",
-        )
-
-        # Extract the UUID ID
-        entry_id = add_result.output.split("ID: ")[1].strip()
-
-        # Test show command with long ID
-        result = runner.invoke(
-            cli, ["show", test_vault, entry_id], input="CorrectHorseBatteryStaple123!\n"
-        )
-
-        assert result.exit_code == 0
-        assert "Service: TestService" in result.output
 
 
 def test_edit_entry(runner: CliRunner) -> None:
@@ -837,7 +811,7 @@ def test_edit_entry(runner: CliRunner) -> None:
         )
         runner.invoke(
             cli,
-            ["add", test_vault, "--id", "1"],
+            ["add", test_vault],
             input="CorrectHorseBatteryStaple123!\nOldService\nolduser\noldpass\noldpass\nOld notes\n",
         )
 

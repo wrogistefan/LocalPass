@@ -23,10 +23,10 @@ class VaultEntry:
 
     @staticmethod
     def create(
-        service: str, username: str, password: str, notes: Optional[str] = None, id: Optional[str] = None
+        service: str, username: str, password: str, notes: Optional[str] = None
     ) -> "VaultEntry":
         return VaultEntry(
-            id=id or str(uuid.uuid4()),
+            id="",  # Will be set by service
             service=service,
             username=username,
             password=password,
@@ -45,6 +45,7 @@ class VaultMetadata:
 class Vault:
     metadata: VaultMetadata
     entries: List[VaultEntry] = field(default_factory=list)
+    next_id: int = 1
 
     def add_entry(self, entry: VaultEntry) -> None:
         self.entries.append(entry)

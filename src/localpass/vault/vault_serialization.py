@@ -29,6 +29,7 @@ def vault_to_dict(vault: Vault) -> Dict[str, Any]:
             "created_at": vault.metadata.created_at.isoformat(),
             "updated_at": vault.metadata.updated_at.isoformat(),
         },
+        "next_id": vault.next_id,
         "entries": [
             {
                 "id": e.id,
@@ -105,4 +106,19 @@ def vault_from_dict(data: Dict[str, Any], path: str = "<in-memory>") -> Vault:
     except ValueError as exc:
         raise ValueError(f"Invalid data format in vault file {path}: {exc}")
 
-    return Vault(metadata=metadata, entries=entries)
+    # Handle next_id for backward compatibility
+    next_id = data.get("next_id")
+    if next_id is None:
+        # Backward compatibility: calculate next_id
+        if not entries:
+            next_id = 1
+        else:
+            numeric_ids = []
+            for e in entries:
+                try:
+                    numeric_ids.append(int(e.id))
+                except ValueError:
+                    pass  # Ignore non-numeric IDs
+            next_id = max(numeric_ids) + 1 if numeric_ids else 1
+
+    return Vault(metadata=metadata, entries=entries, next_id=next_id)
