@@ -2,8 +2,10 @@ import importlib.metadata
 from pathlib import Path
 
 import click
+import requests
 from zxcvbn import zxcvbn
 
+from .hibp import check_pwned_password
 from .prompts import prompt_password_with_confirmation, prompt_required_field
 from .vault.models import EntryNotFoundError, Vault
 from .vault.repository import (
@@ -210,3 +212,39 @@ def edit(path: str, id: str) -> None:
         click.echo("Entry updated successfully.")
     except ValueError as e:
         raise click.ClickException(f"Error: {e}")
+
+
+@cli.command()
+def hibp_check() -> None:
+    """Check if a password appears in known data breaches using HIBP."""
+    click.echo(
+        "This command checks whether a password appears in known data breaches\n"
+        "using the Have I Been Pwned (HIBP) k‑anonymity API.\n"
+        "\n"
+        "LocalPass will send ONLY the first 5 characters of the SHA‑1 hash of your password.\n"
+        "The full password never leaves your device.\n"
+        "\n"
+        "This is an optional, manual check. LocalPass never performs network requests automatically."
+    )
+
+    password = click.prompt("Enter password to check", hide_input=True)
+
+    if not click.confirm("This action will query the HIBP API. Continue?", default=False):
+        click.echo("Cancelled.")
+        return
+
+    try:
+        count = check_pwned_password(password)
+    except requests.RequestException:
+        click.echo("Network error: unable to reach the HIBP API.")
+        return
+    except Exception:
+        # Broad exception to catch any unexpected errors
+        click.echo("An unexpected error occurred while checking the password.")
+        return
+
+    if count > 0:
+        click.echo(f"⚠️  This password appears in known breaches: {count} times.")
+        click.echo("It is strongly recommended to choose a different password.")
+    else:
+        click.echo("✅  This password does not appear in the HIBP breach database.")

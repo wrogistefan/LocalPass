@@ -14,6 +14,7 @@ dependencies = [
     "cryptography",
     "click>=8.0",
     "zxcvbn",
+    "requests",
 ]
 
 [project.scripts]
