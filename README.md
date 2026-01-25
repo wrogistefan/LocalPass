@@ -17,8 +17,7 @@
 
 <p align="center">
   <a href="https://pypi.org/project/localpass/">PyPI</a> •
-  <a href="https://github.com/wrogistefan/LocalPass">GitHub</a> •
-  <a href="https://desktop-2fa.org">Project Website</a>
+  <a href="https://github.com/wrogistefan/LocalPass">GitHub</a>
 </p>
 
 # LocalPass
@@ -38,25 +37,61 @@ LocalPass is a minimal, offline password manager designed for local-first usage.
 - **📦 Zero Cloud**: No cloud sync, no telemetry, no remote storage
 - **📖 Open-Source**: Fully transparent codebase under Apache License 2.0
 
-## ✨ Features Included in v0.1.3
+## ✨ Features Included in v0.2.0
 
-- **Encrypted vault** using Argon2id + AES-GCM
-- **CLI commands**: `init`, `add`, `list`, `show`, `remove`
-- **Cross-platform support** for Windows, macOS, and Linux
-- **Public vault format** for interoperability
-- **Robust serialization** with defaults for missing fields (e.g., tags default to empty list)
-- **Timestamp validation** for vault data integrity
-- **Enhanced error handling** for corrupted or invalid vault files
-- **Short numeric ID support** - specify custom numeric IDs when adding entries
-- **Flexible ID handling** - mix custom IDs with auto-generated ones
-- **Password confirmation** - master password and entry passwords must be confirmed
-- **Required field validation** - service, username, and password fields are mandatory
+- Added optional, fully manual HIBP password check (k‑anonymity API)
+- Added new Security Model section to README
+- Updated README header with professional badges
+- Improved documentation structure and clarity
 
-## 🚀 What's New in 0.1.3
+## Security Model
 
-- **Password confirmation**: Master password must be confirmed during vault initialization, and entry passwords must be confirmed when adding entries.
-- **Required field validation**: Service, username, and password fields are now mandatory and cannot be left empty.
-- **Improved user prompts**: Enhanced CLI prompts with better error messages and validation for a smoother user experience.
+LocalPass follows a strict local‑first and offline‑first security philosophy.
+All operations happen entirely on the user’s device, and no data is ever sent to external services.
+
+### Core Principles
+- **Local‑only encryption** — all vault data is encrypted client‑side using Argon2id and AES‑256‑GCM.
+- **Offline‑first** — the application works fully without network access.
+- **Zero cloud** — no sync, no remote storage, no accounts, no telemetry.
+- **Deterministic security** — the vault file contains everything needed to decrypt the data; nothing is stored elsewhere.
+
+### Threat Model (High‑Level)
+LocalPass protects against:
+- offline brute‑force attacks on the vault file,
+- filesystem snooping,
+- accidental disclosure,
+- network interception (no network operations exist).
+
+LocalPass cannot protect against:
+- keyloggers or malware on the user’s system,
+- shoulder surfing,
+- physical access combined with password knowledge,
+- side‑channel attacks.
+
+### Full Security Documentation
+For detailed cryptographic parameters, vault format, repository types, and responsible disclosure guidelines, see:
+
+👉 **[docs/SECURITY.md](docs/SECURITY.md)**
+
+## Optional HIBP Password Check
+
+LocalPass includes an optional, fully manual password check using the Have I Been Pwned (HIBP) k‑anonymity API.
+
+This feature is:
+- **optional** — disabled by default,
+- **manual** — only executed when explicitly requested by the user,
+- **non‑blocking** — it never prevents vault creation,
+- **privacy‑preserving** — only the first 5 characters of the SHA‑1 hash are sent,
+- **philosophy‑aligned** — no automatic network calls, ever.
+
+This keeps LocalPass fully offline‑first while still offering a useful security tool for users who want it.
+
+## 🚀 What's New in 0.2.0
+
+- Introduced optional manual HIBP password check
+- Added high-level Security Model summary to README
+- Cleaned up and reorganized documentation
+- Updated header and removed outdated links
 
 ## 📥 Installation
 
