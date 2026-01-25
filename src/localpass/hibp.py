@@ -1,10 +1,11 @@
 import hashlib
+
 import requests
 
 
 def sha1_prefix(password: str) -> tuple[str, str]:
     """Compute SHA-1 hash of password and return (first 5 chars, remaining 35 chars)."""
-    hash_obj = hashlib.sha1(password.encode('utf-8'))
+    hash_obj = hashlib.sha1(password.encode("utf-8"))
     full_hash = hash_obj.hexdigest().upper()
     return full_hash[:5], full_hash[5:]
 
@@ -21,7 +22,7 @@ def check_pwned_password(password: str) -> int:
         raise
 
     for line in response.text.splitlines():
-        line_suffix, count_str = line.split(':')
+        line_suffix, count_str = line.split(":")
         if line_suffix == suffix:
             return int(count_str)
     return 0

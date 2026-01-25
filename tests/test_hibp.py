@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 from localpass.hibp import check_pwned_password, sha1_prefix
 
@@ -19,7 +20,9 @@ def test_check_pwned_password_found() -> None:
     with patch("localpass.hibp.requests.get") as mock_get:
         mock_response = Mock()
         mock_response.raise_for_status.return_value = None
-        mock_response.text = "1234567890ABCDEF:1\n1E4C9B93F3F0682250B6CF8331B7EE68FD8:42\n"
+        mock_response.text = (
+            "1234567890ABCDEF:1\n1E4C9B93F3F0682250B6CF8331B7EE68FD8:42\n"
+        )
         mock_get.return_value = mock_response
 
         count = check_pwned_password("password")

@@ -229,7 +229,9 @@ def hibp_check() -> None:
 
     password = click.prompt("Enter password to check", hide_input=True)
 
-    if not click.confirm("This action will query the HIBP API. Continue?", default=False):
+    if not click.confirm(
+        "This action will query the HIBP API. Continue?", default=False
+    ):
         click.echo("Cancelled.")
         return
 
