@@ -1,3 +1,26 @@
+<p align="center">
+  <img src="https://static.pepy.tech/badge/localpass" alt="Downloads">
+  <img src="https://img.shields.io/pypi/v/localpass" alt="PyPI Version">
+  <img src="https://img.shields.io/pypi/pyversions/localpass" alt="Python Versions">
+  <img src="https://img.shields.io/github/license/wrogistefan/LocalPass" alt="License">
+  <img src="https://img.shields.io/github/actions/workflow/status/wrogistefan/LocalPass/tests.yml?label=tests" alt="Tests">
+  <img src="https://img.shields.io/github/last-commit/wrogistefan/LocalPass" alt="Last Commit">
+</p>
+
+<h1 align="center">LocalPass</h1>
+
+<p align="center">
+  <strong>Local-first, offline password manager.</strong><br>
+  Zero cloud. Zero telemetry. Fully open-source.
+  Designed for security, simplicity, and complete user control.
+</p>
+
+<p align="center">
+  <a href="https://pypi.org/project/localpass/">PyPI</a> •
+  <a href="https://github.com/wrogistefan/LocalPass">GitHub</a> •
+  <a href="https://desktop-2fa.org">Project Website</a>
+</p>
+
 # LocalPass
 
 [![codecov](https://codecov.io/gh/wrogistefan/LocalPass/branch/main/graph/badge.svg)](https://codecov.io/gh/wrogistefan/LocalPass)
