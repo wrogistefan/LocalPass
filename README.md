@@ -3,8 +3,9 @@
   <img src="https://img.shields.io/pypi/v/localpass" alt="PyPI Version">
   <img src="https://img.shields.io/pypi/pyversions/localpass" alt="Python Versions">
   <img src="https://img.shields.io/github/license/wrogistefan/LocalPass" alt="License">
-  <img src="https://img.shields.io/github/actions/workflow/status/wrogistefan/LocalPass/tests.yml?label=tests" alt="Tests">
+  <img src="https://img.shields.io/github/actions/workflow/status/wrogistefan/LocalPass/ci.yml?label=tests" alt="Tests">
   <img src="https://img.shields.io/github/last-commit/wrogistefan/LocalPass" alt="Last Commit">
+  <a href="https://codecov.io/gh/wrogistefan/LocalPass"><img src="https://codecov.io/gh/wrogistefan/LocalPass/branch/main/graph/badge.svg" alt="codecov"></a>
 </p>
 
 <p align="center">
@@ -19,8 +20,6 @@
 </p>
 
 # LocalPass
-
-[![codecov](https://codecov.io/gh/wrogistefan/LocalPass/branch/main/graph/badge.svg)](https://codecov.io/gh/wrogistefan/LocalPass)
 
 **Local-first, offline password manager with zero cloud, zero telemetry, and fully open-source.**
 
