@@ -82,31 +82,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Edge cases in cryptographic operations
 - CLI argument parsing issues
 
-## [0.2.1] - 2026-01-26
-
+## [0.2.1] – 2026‑01‑26
 ### Fixed
+- Corrected the README *Tests* badge to reference the `ci.yml` workflow
+- Moved the Codecov badge into the main header for improved visual consistency
+- Minor documentation cleanup and formatting improvements
 
-- **README badges**: Corrected Tests badge workflow reference from `tests.yml` to `ci.yml` and moved Codecov badge into the header badge block for improved visual layout
+### Notes
+This is a maintenance release focused solely on documentation and metadata polish.
+No changes were made to the vault format, CLI commands, cryptographic model, or application behavior.
 
-## [0.2.0] - 2026-01-26
+---
+
+## [0.2.0] – 2026‑01‑25
 
 ### Added
 
-- **Manual HIBP password check**: New `localpass hibp-check` command using SHA-1 k-anonymity API for optional breach checking
-- **Enhanced documentation**: Improved README structure, added Security Model section, and updated user manual
-- **Test coverage improvements**: Achieved 99% test coverage (excluding __main__.py entry point)
-- **Cross-platform verification**: Confirmed compatibility with Windows PowerShell and Unix shells (WSL/bash)
-
-### Security
-
-- Explicit user confirmation required before any HIBP API requests
-- Only first 5 characters of SHA-1 hash sent over network; full passwords never transmitted
-- No automatic network calls; all operations remain offline-first
+- Complete offline‑first vault architecture using Argon2id + AES‑256‑GCM
+- Manual HIBP password check (`hibp-check`) using k‑anonymity (SHA‑1 prefix only)
+- Full security documentation (`docs/SECURITY.md`)
+- Comprehensive User Manual (`docs/USER_MANUAL.md`)
+- Professional README header with project badges
+- Verified cross‑platform support (Windows, macOS, Linux/WSL)
+- 99% test coverage across the codebase
 
 ### Changed
 
-- Updated README with professional badges and clearer feature descriptions
-- Improved error handling for network and malformed API responses
+- Improved README structure and feature descriptions
+- Refined documentation for clarity and consistency
+
+### Notes
+
+This is the first stable and fully documented release of LocalPass, establishing the foundation for all future versions.
 
 [0.2.1]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.2.1
 [0.2.0]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.2.0
