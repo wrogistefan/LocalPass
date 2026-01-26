@@ -117,3 +117,17 @@ def test_prompt_password_with_confirmation_mismatch() -> None:
             mock_echo.assert_called_with(
                 "Error: Passwords do not match. Please try again."
             )
+
+
+def test_prompt_password_with_confirmation_handles_abort() -> None:
+    """
+    When the user cancels the prompt (click.Abort), prompt_password_with_confirmation should
+    propagate the abort without handling it.
+    """
+
+    def fake_prompt(text: str, **kwargs: object) -> str:
+        raise click.Abort()
+
+    with patch("click.prompt", fake_prompt):
+        with pytest.raises(click.Abort):
+            prompt_password_with_confirmation("Enter password: ")

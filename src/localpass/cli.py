@@ -6,7 +6,7 @@ import requests  # type: ignore[import-untyped]
 from zxcvbn import zxcvbn
 
 from .hibp import check_pwned_password
-from .prompts import prompt_password_with_confirmation, prompt_required_field
+from .prompts import ERROR_EMPTY_FIELD, prompt_password_with_confirmation, prompt_required_field
 from .vault.models import EntryNotFoundError, Vault
 from .vault.repository import (
     CorruptedVaultError,
@@ -233,7 +233,15 @@ def hibp_check() -> None:
         click.echo("Cancelled.")
         return
 
-    password = click.prompt("Enter password to check", hide_input=True)
+    while True:
+        try:
+            password = click.prompt("Enter password to check", hide_input=True)
+        except click.Abort:
+            click.echo("\nOperation cancelled.")
+            return
+        if password.strip():
+            break
+        click.echo(ERROR_EMPTY_FIELD)
 
     try:
         count = check_pwned_password(password)

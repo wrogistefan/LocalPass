@@ -1113,6 +1113,21 @@ def test_hibp_check_unexpected_error(mock_check: Mock, runner: CliRunner) -> Non
     mock_check.assert_called_once_with("testpassword")
 
 
+@patch("localpass.cli.check_pwned_password")
+def test_hibp_check_empty_password_then_success(mock_check: Mock, runner: CliRunner) -> None:
+    mock_check.return_value = 0
+
+    result = runner.invoke(
+        cli,
+        ["hibp-check"],
+        input="y\n\n\ntestpassword\n",
+    )
+
+    assert result.exit_code == 0
+    assert "This password was not found in the HIBP breach database." in result.output
+    mock_check.assert_called_once_with("testpassword")
+
+
 def test_remove_entry_with_numeric_id_success(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"

@@ -1,4 +1,5 @@
 import hashlib
+import importlib.metadata
 
 import requests  # type: ignore[import-untyped]
 
@@ -16,9 +17,14 @@ def check_pwned_password(password: str) -> int:
     url = f"https://api.pwnedpasswords.com/range/{prefix}"
 
     try:
+        version = importlib.metadata.version("localpass")
+    except importlib.metadata.PackageNotFoundError:
+        version = "unknown"
+
+    try:
         response = requests.get(
             url,
-            headers={"User-Agent": "localpass/0.2.0 (manual HIBP check)"},
+            headers={"User-Agent": f"localpass/{version} (manual HIBP check)"},
             timeout=(2, 5),
         )
         response.raise_for_status()
