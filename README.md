@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://static.pepy.tech/badge/localpass" alt="Downloads">
   <img src="https://img.shields.io/pypi/v/localpass" alt="PyPI Version">
-  ![Python Version](https://img.shields.io/badge/python-3.11+-blue)
+  <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python Version">
   <img src="https://img.shields.io/github/license/wrogistefan/LocalPass" alt="License">
   <img src="https://img.shields.io/github/actions/workflow/status/wrogistefan/LocalPass/ci.yml?label=tests" alt="Tests">
   <img src="https://img.shields.io/github/last-commit/wrogistefan/LocalPass" alt="Last Commit">
