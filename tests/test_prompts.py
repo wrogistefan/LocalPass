@@ -104,7 +104,9 @@ def test_prompt_password_with_confirmation_empty_password() -> None:
         with patch("click.echo") as mock_echo:
             result = prompt_password_with_confirmation("Enter password: ")
             assert result == "password"
-            mock_echo.assert_called_with("Error: This field cannot be empty. Please enter a value.")
+            mock_echo.assert_called_with(
+                "Error: This field cannot be empty. Please enter a value."
+            )
 
 
 def test_prompt_password_with_confirmation_mismatch() -> None:
@@ -112,4 +114,6 @@ def test_prompt_password_with_confirmation_mismatch() -> None:
         with patch("click.echo") as mock_echo:
             result = prompt_password_with_confirmation("Enter password: ")
             assert result == "pass1"
-            mock_echo.assert_called_with("Error: Passwords do not match. Please try again.")
+            mock_echo.assert_called_with(
+                "Error: Passwords do not match. Please try again."
+            )

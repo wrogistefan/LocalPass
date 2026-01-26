@@ -1015,7 +1015,10 @@ def test_edit_entry_handles_value_error(runner: CliRunner) -> None:
         )
 
         # Mock the service.edit_entry to raise ValueError
-        with patch("localpass.cli.VaultService.edit_entry", side_effect=ValueError("Mock error")):
+        with patch(
+            "localpass.cli.VaultService.edit_entry",
+            side_effect=ValueError("Mock error"),
+        ):
             result = runner.invoke(
                 cli,
                 ["edit", test_vault, "1"],
