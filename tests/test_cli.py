@@ -992,10 +992,7 @@ def test_hibp_check_success_zero(mock_check: Mock, runner: CliRunner) -> None:
         "This command checks whether a password appears in known data breaches"
         in result.output
     )
-    assert (
-        "This password was not found in the HIBP breach database."
-        in result.output
-    )
+    assert "This password was not found in the HIBP breach database." in result.output
     assert (
         "Absence from the database does not guarantee the password is safe."
         in result.output

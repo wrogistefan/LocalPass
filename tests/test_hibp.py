@@ -29,7 +29,9 @@ def test_check_pwned_password_found() -> None:
         assert count == 42
 
         mock_get.assert_called_once()
-        assert mock_get.call_args[0][0].startswith("https://api.pwnedpasswords.com/range/")
+        assert mock_get.call_args[0][0].startswith(
+            "https://api.pwnedpasswords.com/range/"
+        )
         assert mock_get.call_args[1]["timeout"] == (2, 5)
 
 
@@ -45,7 +47,9 @@ def test_check_pwned_password_not_found() -> None:
         assert count == 0
 
         mock_get.assert_called_once()
-        assert mock_get.call_args[0][0].startswith("https://api.pwnedpasswords.com/range/")
+        assert mock_get.call_args[0][0].startswith(
+            "https://api.pwnedpasswords.com/range/"
+        )
         assert mock_get.call_args[1]["timeout"] == (2, 5)
 
 
