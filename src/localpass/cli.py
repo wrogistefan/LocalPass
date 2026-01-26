@@ -253,7 +253,9 @@ def hibp_check() -> None:
         raise click.ClickException("Network error: unable to reach the HIBP API.")
     except Exception:
         # Broad exception to catch any unexpected errors
-        raise click.ClickException("An unexpected error occurred while checking the password.")
+        raise click.ClickException(
+            "An unexpected error occurred while checking the password."
+        )
 
     if count > 0:
         click.echo(f"⚠️  This password appears in known breaches: {count} times.")

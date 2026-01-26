@@ -6,7 +6,6 @@ import pytest
 from click.testing import CliRunner
 
 from localpass.cli import cli
-from localpass.prompts import ERROR_EMPTY_FIELD
 
 
 def _setup_vault_with_entry(
@@ -1129,8 +1128,6 @@ def test_hibp_check_empty_password_then_success(
     assert result.exit_code == 0
     assert "This password was not found in the HIBP breach database." in result.output
     mock_check.assert_called_once_with("testpassword")
-
-
 
 
 def test_remove_entry_with_numeric_id_success(runner: CliRunner) -> None:
