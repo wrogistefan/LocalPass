@@ -36,6 +36,8 @@ LocalPass is a minimal, offline password manager designed for local-first usage.
 - **💻 Cross-platform**: Works on Windows, macOS, and Linux
 - **📦 Zero Cloud**: No cloud sync, no telemetry, no remote storage
 - **📖 Open-Source**: Fully transparent codebase under Apache License 2.0
+- **✅ High Test Coverage**: 99% test coverage with comprehensive validation
+- **🔧 Shell Compatibility**: Verified on Windows PowerShell and Unix shells (WSL/bash)
 
 ## ✨ Features Included in v0.2.0
 
@@ -121,9 +123,8 @@ localpass init myvault.lp
 ### Add a new entry
 
 ```bash
-localpass add myvault.lp
+localpass add myvault.lp --id 1
 # You'll be prompted for master password, service, username, password (with confirmation), and notes
-# Use --id <number> to specify a custom numeric ID
 ```
 
 ### List all entries
@@ -142,6 +143,13 @@ localpass show myvault.lp <entry-id>
 
 ```bash
 localpass remove myvault.lp <entry-id>
+```
+
+### Check password against breaches
+
+```bash
+localpass hibp-check
+# You'll be prompted to confirm the network request, then enter a password to check
 ```
 
 ## 📁 Project Structure

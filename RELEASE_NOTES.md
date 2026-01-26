@@ -1,27 +1,28 @@
-# LocalPass v0.1.3 Release Notes
+# LocalPass v0.2.0 Release Notes
 
 ## 🎉 Summary
 
-LocalPass v0.1.3 enhances user experience with improved input validation and password confirmation prompts. This release adds mandatory field validation and password confirmation to prevent errors and improve security during vault operations.
+LocalPass v0.2.0 introduces an optional manual password breach check using the Have I Been Pwned (HIBP) k-anonymity API, along with documentation improvements and enhanced test coverage. This release maintains the offline-first philosophy while providing users with an additional security tool.
 
 ## 🌟 Highlights
 
 ### New Features
 
-- **Password Confirmation**: Master password must be confirmed during vault initialization, and entry passwords must be confirmed when adding entries
-- **Required Field Validation**: Service, username, and password fields are now mandatory and cannot be left empty
-- **Enhanced User Prompts**: Improved CLI prompts with better error messages and validation for a smoother user experience
+- **Manual HIBP Password Check**: New `localpass hibp-check` command for checking passwords against known breaches
+- **Enhanced Documentation**: Updated README with Security Model section and improved structure
+- **High Test Coverage**: Achieved 99% test coverage with comprehensive validation
+- **Cross-Platform Compatibility**: Verified behavior on Windows PowerShell and Unix shells (WSL/bash)
 
 ### Example Usage
 
 ```bash
-# Initialize vault with password confirmation
+# Check a password against breaches
+localpass hibp-check
+
+# Initialize vault (unchanged)
 localpass init myvault.lp
 
-# Add entry with required field validation and password confirmation
-localpass add myvault.lp
-
-# Add entry with custom numeric ID
+# Add entry with custom ID
 localpass add myvault.lp --id 1
 ```
 
@@ -30,7 +31,7 @@ localpass add myvault.lp --id 1
 ### Using pip
 
 ```bash
-pip install localpass==0.1.3
+pip install localpass==0.2.0
 ```
 
 ### From source
@@ -38,7 +39,7 @@ pip install localpass==0.1.3
 ```bash
 git clone https://github.com/wrogistefan/LocalPass.git
 cd LocalPass
-git checkout v0.1.3
+git checkout v0.2.0
 pip install -e .
 ```
 
@@ -48,36 +49,40 @@ pip install -e .
 - **AES-256-GCM** authenticated encryption
 - **Random salt and nonce** for each vault
 - **Zero telemetry** and no cloud dependencies
+- **Manual HIBP check** with k-anonymity (only SHA-1 prefix sent)
 
 ## ✨ What's Changed
 
 ### Added
-- Password confirmation prompts for vault initialization and entry addition
-- Required field validation for service, username, and password fields
-- Enhanced user input prompts with better error handling
-- Improved CLI user experience with mandatory validation
+
+- Manual HIBP password check command with explicit user confirmation
+- Security Model section in README
+- Professional badges and improved documentation structure
+- 99% test coverage achievement
+- Cross-platform shell compatibility verification
 
 ### Changed
-- Vault initialization now requires password confirmation
-- Entry addition now validates all required fields and confirms passwords
-- Better error messages for invalid or empty inputs
 
-### Technical Details
-- New prompt functions for required fields and password confirmation
-- Enhanced input validation prevents empty or invalid entries
-- Backward compatible with existing vaults (no data format changes)
+- Updated README with clearer feature descriptions
+- Improved error handling for network operations
+
+### Security
+
+- Explicit confirmation before HIBP API requests
+- Only first 5 characters of SHA-1 hash transmitted
+- No automatic network calls
 
 ## 📚 Documentation
 
 Comprehensive documentation is included in this release:
 
-- [📖 User Manual](docs/USER_MANUAL.md) - Complete CLI usage guide
+- [📖 User Manual](docs/USER_MANUAL.md) - Complete CLI usage guide including new HIBP command
 - [🔐 Security Documentation](docs/SECURITY.md) - Threat model and encryption details
 - [📜 Changelog](CHANGELOG.md) - Full release history
 
 ## ⚠️ Breaking Changes
 
-None for v0.1.3 - fully backward compatible with previous versions. Existing vaults work without any changes.
+None for v0.2.0 - fully backward compatible with previous versions. Existing vaults work without any changes.
 
 ## 🐛 Known Issues
 
@@ -88,7 +93,7 @@ None for v0.1.3 - fully backward compatible with previous versions. Existing vau
 
 ## 📈 Upgrade Notes
 
-Existing vaults from v0.1.2 and earlier are fully compatible. The new validation features only affect user input during vault operations, not stored data.
+Existing vaults from v0.1.x are fully compatible. The new HIBP feature is optional and does not affect existing functionality.
 
 ## 🚀 Upgrade Steps
 

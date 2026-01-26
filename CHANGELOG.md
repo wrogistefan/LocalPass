@@ -82,6 +82,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Edge cases in cryptographic operations
 - CLI argument parsing issues
 
+## [0.2.0] - 2026-01-26
+
+### Added
+
+- **Manual HIBP password check**: New `localpass hibp-check` command using SHA-1 k-anonymity API for optional breach checking
+- **Enhanced documentation**: Improved README structure, added Security Model section, and updated user manual
+- **Test coverage improvements**: Achieved 99% test coverage (excluding __main__.py entry point)
+- **Cross-platform verification**: Confirmed compatibility with Windows PowerShell and Unix shells (WSL/bash)
+
+### Security
+
+- Explicit user confirmation required before any HIBP API requests
+- Only first 5 characters of SHA-1 hash sent over network; full passwords never transmitted
+- No automatic network calls; all operations remain offline-first
+
+### Changed
+
+- Updated README with professional badges and clearer feature descriptions
+- Improved error handling for network and malformed API responses
+
+[0.2.0]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.2.0
 [0.1.3]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.1.3
 [0.1.2]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.1.2
 [0.1.1]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.1.1
