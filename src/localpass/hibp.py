@@ -1,6 +1,6 @@
 import hashlib
 
-import requests
+import requests  # type: ignore[import-untyped]
 
 
 def sha1_prefix(password: str) -> tuple[str, str]:
@@ -16,13 +16,15 @@ def check_pwned_password(password: str) -> int:
     url = f"https://api.pwnedpasswords.com/range/{prefix}"
 
     try:
-        response = requests.get(url, timeout=(2, 5))
+        response = requests.get(url, headers={"User-Agent": "localpass/0.2.0 (manual HIBP check)"}, timeout=(2, 5))
         response.raise_for_status()
     except requests.RequestException:
         raise
 
     for line in response.text.splitlines():
-        line_suffix, count_str = line.split(":")
-        if line_suffix == suffix:
+        parts = line.strip().split(":", 1)
+        if len(parts) != 2: continue
+        hash_suffix, count_str = parts
+        if hash_suffix == suffix:
             return int(count_str)
     return 0

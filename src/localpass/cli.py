@@ -2,7 +2,7 @@ import importlib.metadata
 from pathlib import Path
 
 import click
-import requests
+import requests  # type: ignore[import-untyped]
 from zxcvbn import zxcvbn
 
 from .hibp import check_pwned_password
@@ -227,13 +227,13 @@ def hibp_check() -> None:
         "This is an optional, manual check. LocalPass never performs network requests automatically."
     )
 
-    password = click.prompt("Enter password to check", hide_input=True)
-
     if not click.confirm(
-        "This action will query the HIBP API. Continue?", default=False
+        "This action will query the HIBP API. Continue? [y/N]:", default=False
     ):
         click.echo("Cancelled.")
         return
+
+    password = click.prompt("Enter password to check", hide_input=True)
 
     try:
         count = check_pwned_password(password)
@@ -249,4 +249,5 @@ def hibp_check() -> None:
         click.echo(f"⚠️  This password appears in known breaches: {count} times.")
         click.echo("It is strongly recommended to choose a different password.")
     else:
-        click.echo("✅  This password does not appear in the HIBP breach database.")
+        click.echo("This password was not found in the HIBP breach database.")
+        click.echo("Absence from the database does not guarantee the password is safe.")

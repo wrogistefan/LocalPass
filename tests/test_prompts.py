@@ -77,7 +77,7 @@ def test_prompt_required_field_handles_cancel() -> None:
     - Propagate the abort (e.g. via click.Abort or SystemExit)
     """
 
-    def fake_prompt(text: str, **kwargs: object) -> str:  # type: ignore[override]
+    def fake_prompt(text: str, **kwargs: object) -> str:
         raise click.Abort()
 
     echoed: List[str] = []
