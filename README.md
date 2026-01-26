@@ -36,12 +36,9 @@ LocalPass is a minimal, offline password manager designed for local-first usage.
 - **✅ High Test Coverage**: 99% test coverage with comprehensive validation
 - **🔧 Shell Compatibility**: Verified on Windows PowerShell and Unix shells (WSL/bash)
 
-## ✨ Features Included in v0.2.0
+## ✨ Features Included in v0.2.1
 
-- Added optional, fully manual HIBP password check (k‑anonymity API)
-- Added new Security Model section to README
-- Updated README header with professional badges
-- Improved documentation structure and clarity
+- Fixed README badges: corrected Tests workflow reference and moved Codecov badge to header
 
 ## Security Model
 
@@ -85,12 +82,9 @@ This feature is:
 
 This keeps LocalPass fully offline‑first while still offering a useful security tool for users who want it.
 
-## 🚀 What's New in 0.2.0
+## 🚀 What's New in 0.2.1
 
-- Introduced optional manual HIBP password check
-- Added high-level Security Model summary to README
-- Cleaned up and reorganized documentation
-- Updated header and removed outdated links
+- Fixed README badges for improved visual layout and correct workflow references
 
 ## 📥 Installation
 
