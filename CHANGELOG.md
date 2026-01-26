@@ -82,6 +82,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Edge cases in cryptographic operations
 - CLI argument parsing issues
 
+## [0.2.1] - 2026-01-26
+
+### Fixed
+
+- **README badges**: Corrected Tests badge workflow reference from `tests.yml` to `ci.yml` and moved Codecov badge into the header badge block for improved visual layout
+
 ## [0.2.0] - 2026-01-26
 
 ### Added
@@ -102,6 +108,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated README with professional badges and clearer feature descriptions
 - Improved error handling for network and malformed API responses
 
+[0.2.1]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.2.1
 [0.2.0]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.2.0
 [0.1.3]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.1.3
 [0.1.2]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.1.2

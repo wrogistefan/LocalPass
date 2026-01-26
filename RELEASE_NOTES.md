@@ -1,17 +1,14 @@
-# LocalPass v0.2.0 Release Notes
+# LocalPass v0.2.1 Release Notes
 
 ## 🎉 Summary
 
-LocalPass v0.2.0 introduces an optional manual password breach check using the Have I Been Pwned (HIBP) k-anonymity API, along with documentation improvements and enhanced test coverage. This release maintains the offline-first philosophy while providing users with an additional security tool.
+LocalPass v0.2.1 includes fixes to the README badges for improved visual layout and correct workflow references. This patch release maintains all existing functionality while enhancing the project's presentation.
 
 ## 🌟 Highlights
 
-### New Features
+### Fixes
 
-- **Manual HIBP Password Check**: New `localpass hibp-check` command for checking passwords against known breaches
-- **Enhanced Documentation**: Updated README with Security Model section and improved structure
-- **High Test Coverage**: Achieved 99% test coverage with comprehensive validation
-- **Cross-Platform Compatibility**: Verified behavior on Windows PowerShell and Unix shells (WSL/bash)
+- **README Badge Improvements**: Corrected Tests badge workflow reference and moved Codecov badge into the header for better visual layout
 
 ### Example Usage
 
@@ -31,7 +28,7 @@ localpass add myvault.lp --id 1
 ### Using pip
 
 ```bash
-pip install localpass==0.2.0
+pip install localpass==0.2.1
 ```
 
 ### From source
@@ -39,7 +36,7 @@ pip install localpass==0.2.0
 ```bash
 git clone https://github.com/wrogistefan/LocalPass.git
 cd LocalPass
-git checkout v0.2.0
+git checkout v0.2.1
 pip install -e .
 ```
 
