@@ -64,6 +64,20 @@ def test_check_pwned_password_network_error() -> None:
             check_pwned_password("password")
 
 
+def test_check_pwned_password_malformed_response() -> None:
+    """Test handling of malformed response lines."""
+    with patch("localpass.hibp.requests.get") as mock_get:
+        mock_response = Mock()
+        mock_response.raise_for_status.return_value = None
+        mock_response.text = (
+            "1234567890ABCDEF:1\nmalformed_line\n1E4C9B93F3F0682250B6CF8331B7EE68FD8:42\n"
+        )
+        mock_get.return_value = mock_response
+
+        count = check_pwned_password("password")
+        assert count == 42  # Should skip malformed line and find the match
+
+
 def test_check_pwned_password_timeout() -> None:
     """Test timeout handling."""
     import requests

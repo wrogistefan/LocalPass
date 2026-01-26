@@ -4,7 +4,7 @@ from unittest.mock import patch
 import click
 import pytest
 
-from localpass.prompts import prompt_required_field
+from localpass.prompts import prompt_password_with_confirmation, prompt_required_field
 
 
 def test_prompt_required_field_success() -> None:
@@ -91,3 +91,25 @@ def test_prompt_required_field_handles_cancel() -> None:
 
     # Ensure our UX message was printed
     assert any("Operation cancelled." in msg for msg in echoed)
+
+
+def test_prompt_password_with_confirmation_success() -> None:
+    with patch("click.prompt", side_effect=["password", "password"]):
+        result = prompt_password_with_confirmation("Enter password: ")
+        assert result == "password"
+
+
+def test_prompt_password_with_confirmation_empty_password() -> None:
+    with patch("click.prompt", side_effect=["", "password", "password"]):
+        with patch("click.echo") as mock_echo:
+            result = prompt_password_with_confirmation("Enter password: ")
+            assert result == "password"
+            mock_echo.assert_called_with("Error: This field cannot be empty. Please enter a value.")
+
+
+def test_prompt_password_with_confirmation_mismatch() -> None:
+    with patch("click.prompt", side_effect=["pass1", "pass2", "pass1", "pass1"]):
+        with patch("click.echo") as mock_echo:
+            result = prompt_password_with_confirmation("Enter password: ")
+            assert result == "pass1"
+            mock_echo.assert_called_with("Error: Passwords do not match. Please try again.")

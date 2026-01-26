@@ -73,6 +73,27 @@ def test_init_overwrite_prompt(runner: CliRunner) -> None:
         assert "Vault initialized successfully." in result.output
 
 
+def test_init_overwrite_abort(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create a dummy file first
+        Path(test_vault).write_text("{}")
+
+        # Test init command with no overwrite
+        result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="n\n",
+        )
+
+        assert result.exit_code == 0
+        assert "Aborted." in result.output
+        # File should still exist and be unchanged
+        assert Path(test_vault).exists()
+        assert Path(test_vault).read_text() == "{}"
+
+
 def test_add_entry(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
@@ -975,6 +996,34 @@ def test_show_entry_with_nonexistent_numeric_id(runner: CliRunner) -> None:
 
         assert result.exit_code == 1
         assert "Error: Entry with ID '999' not found." in result.stderr
+
+
+def test_edit_entry_handles_value_error(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault and add an entry
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+        runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\nService\nuser\npass\npass\nnotes\n",
+        )
+
+        # Mock the service.edit_entry to raise ValueError
+        with patch("localpass.cli.VaultService.edit_entry", side_effect=ValueError("Mock error")):
+            result = runner.invoke(
+                cli,
+                ["edit", test_vault, "1"],
+                input="CorrectHorseBatteryStaple123!\nNewService\nnewuser\nn\nNew notes\n",
+            )
+
+        assert result.exit_code == 1
+        assert "Error: Mock error" in result.stderr
 
 
 @patch("localpass.cli.check_pwned_password")
