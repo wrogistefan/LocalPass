@@ -250,12 +250,10 @@ def hibp_check() -> None:
     try:
         count = check_pwned_password(password)
     except requests.RequestException:
-        click.echo("Network error: unable to reach the HIBP API.")
-        return
+        raise click.ClickException("Network error: unable to reach the HIBP API.")
     except Exception:
         # Broad exception to catch any unexpected errors
-        click.echo("An unexpected error occurred while checking the password.")
-        return
+        raise click.ClickException("An unexpected error occurred while checking the password.")
 
     if count > 0:
         click.echo(f"⚠️  This password appears in known breaches: {count} times.")

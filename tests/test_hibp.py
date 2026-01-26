@@ -85,3 +85,24 @@ def test_check_pwned_password_timeout() -> None:
 
         with pytest.raises(requests.RequestException):
             check_pwned_password("password")
+
+
+def test_check_pwned_password_version_not_found() -> None:
+    """Test handling when package version is not found."""
+    import importlib.metadata
+
+    with patch("localpass.hibp.requests.get") as mock_get, \
+         patch("localpass.hibp.importlib.metadata.version") as mock_version:
+        mock_version.side_effect = importlib.metadata.PackageNotFoundError("localpass")
+        mock_response = Mock()
+        mock_response.raise_for_status.return_value = None
+        mock_response.text = "1234567890ABCDEF:1\n"
+        mock_get.return_value = mock_response
+
+        count = check_pwned_password("password")
+        assert count == 0
+
+        # Check that User-Agent contains "unknown"
+        mock_get.assert_called_once()
+        assert "User-Agent" in mock_get.call_args[1]["headers"]
+        assert mock_get.call_args[1]["headers"]["User-Agent"] == "localpass/unknown (manual HIBP check)"

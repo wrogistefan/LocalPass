@@ -7,8 +7,6 @@
   <img src="https://img.shields.io/github/last-commit/wrogistefan/LocalPass" alt="Last Commit">
 </p>
 
-<h1 align="center">LocalPass</h1>
-
 <p align="center">
   <strong>Local-first, offline password manager.</strong><br>
   Zero cloud. Zero telemetry. Fully open-source.

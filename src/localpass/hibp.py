@@ -21,15 +21,12 @@ def check_pwned_password(password: str) -> int:
     except importlib.metadata.PackageNotFoundError:
         version = "unknown"
 
-    try:
-        response = requests.get(
-            url,
-            headers={"User-Agent": f"localpass/{version} (manual HIBP check)"},
-            timeout=(2, 5),
-        )
-        response.raise_for_status()
-    except requests.RequestException:
-        raise
+    response = requests.get(
+        url,
+        headers={"User-Agent": f"localpass/{version} (manual HIBP check)"},
+        timeout=(2, 5),
+    )
+    response.raise_for_status()
 
     for line in response.text.splitlines():
         parts = line.strip().split(":", 1)
