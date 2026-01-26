@@ -2,7 +2,7 @@
 
 ## 📖 Introduction
 
-Welcome to LocalPass! This manual provides comprehensive instructions for using LocalPass, a local-first, offline password manager.
+Welcome to LocalPass! This manual provides comprehensive instructions for using LocalPass, a local-first, offline password manager. Verified to work on Windows PowerShell and Unix shells (WSL/bash).
 
 ## 📥 Installation
 
@@ -162,6 +162,44 @@ localpass remove myvault.lp abc123
 $ localpass remove myvault.lp abc123
 Enter master password: 
 Entry removed successfully.
+```
+
+### `localpass hibp-check`
+
+Check if a password appears in known data breaches using the Have I Been Pwned (HIBP) k-anonymity API.
+
+**Usage:**
+```bash
+localpass hibp-check
+```
+
+**Process:**
+1. You'll be prompted to confirm the network request (required for privacy)
+2. Enter the password to check (input is hidden)
+3. LocalPass sends only the first 5 characters of the SHA-1 hash to the HIBP API
+4. The API responds with matching hash suffixes and breach counts
+5. Results are displayed locally
+
+**Important Notes:**
+- This is fully manual and optional - LocalPass never performs automatic network requests
+- Only the SHA-1 prefix (5 characters) is sent; the full password and hash never leave your device
+- Requires internet connection for the check
+- Graceful error handling for network failures or malformed responses
+
+**Example:**
+```bash
+$ localpass hibp-check
+This command checks whether a password appears in known data breaches
+using the Have I Been Pwned (HIBP) k-anonymity API.
+
+LocalPass will send ONLY the first 5 characters of the SHA-1 hash of your password.
+The full password never leaves your device.
+
+This is an optional, manual check. LocalPass never performs network requests automatically.
+This action will query the HIBP API. Continue? [y/N]: y
+Enter password to check: 
+This password was not found in the HIBP breach database.
+Absence from the database does not guarantee the password is safe.
 ```
 
 ## 🗃️ Vault File Format

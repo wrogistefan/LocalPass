@@ -73,6 +73,27 @@ def test_init_overwrite_prompt(runner: CliRunner) -> None:
         assert "Vault initialized successfully." in result.output
 
 
+def test_init_overwrite_abort(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create a dummy file first
+        Path(test_vault).write_text("{}")
+
+        # Test init command with no overwrite
+        result = runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="n\n",
+        )
+
+        assert result.exit_code == 0
+        assert "Aborted." in result.output
+        # File should still exist and be unchanged
+        assert Path(test_vault).exists()
+        assert Path(test_vault).read_text() == "{}"
+
+
 def test_add_entry(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
@@ -975,6 +996,138 @@ def test_show_entry_with_nonexistent_numeric_id(runner: CliRunner) -> None:
 
         assert result.exit_code == 1
         assert "Error: Entry with ID '999' not found." in result.stderr
+
+
+def test_edit_entry_handles_value_error(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        test_vault = "test_vault.json"
+
+        # Create vault and add an entry
+        runner.invoke(
+            cli,
+            ["init", test_vault],
+            input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+        )
+        runner.invoke(
+            cli,
+            ["add", test_vault],
+            input="CorrectHorseBatteryStaple123!\nService\nuser\npass\npass\nnotes\n",
+        )
+
+        # Mock the service.edit_entry to raise ValueError
+        with patch(
+            "localpass.cli.VaultService.edit_entry",
+            side_effect=ValueError("Mock error"),
+        ):
+            result = runner.invoke(
+                cli,
+                ["edit", test_vault, "1"],
+                input="CorrectHorseBatteryStaple123!\nNewService\nnewuser\nn\nNew notes\n",
+            )
+
+        assert result.exit_code == 1
+        assert "Error: Mock error" in result.stderr
+
+
+@patch("localpass.cli.check_pwned_password")
+def test_hibp_check_success_zero(mock_check: Mock, runner: CliRunner) -> None:
+    mock_check.return_value = 0
+
+    result = runner.invoke(
+        cli,
+        ["hibp-check"],
+        input="y\ntestpassword\n",
+    )
+
+    assert result.exit_code == 0
+    assert (
+        "This command checks whether a password appears in known data breaches"
+        in result.output
+    )
+    assert "This password was not found in the HIBP breach database." in result.output
+    assert (
+        "Absence from the database does not guarantee the password is safe."
+        in result.output
+    )
+    mock_check.assert_called_once_with("testpassword")
+
+
+@patch("localpass.cli.check_pwned_password")
+def test_hibp_check_success_pwned(mock_check: Mock, runner: CliRunner) -> None:
+    mock_check.return_value = 42
+
+    result = runner.invoke(
+        cli,
+        ["hibp-check"],
+        input="y\ntestpassword\n",
+    )
+
+    assert result.exit_code == 0
+    assert "⚠️  This password appears in known breaches: 42 times." in result.output
+    assert "It is strongly recommended to choose a different password." in result.output
+    mock_check.assert_called_once_with("testpassword")
+
+
+@patch("localpass.cli.check_pwned_password")
+def test_hibp_check_cancelled(mock_check: Mock, runner: CliRunner) -> None:
+    result = runner.invoke(
+        cli,
+        ["hibp-check"],
+        input="n\n",
+    )
+
+    assert result.exit_code == 0
+    assert "Cancelled." in result.output
+    mock_check.assert_not_called()
+
+
+@patch("localpass.cli.check_pwned_password")
+def test_hibp_check_network_error(mock_check: Mock, runner: CliRunner) -> None:
+    import requests  # type: ignore[import-untyped]
+
+    mock_check.side_effect = requests.RequestException("Network error")
+
+    result = runner.invoke(
+        cli,
+        ["hibp-check"],
+        input="y\ntestpassword\n",
+    )
+
+    assert result.exit_code == 1
+    assert "Network error: unable to reach the HIBP API." in result.output
+    mock_check.assert_called_once_with("testpassword")
+
+
+@patch("localpass.cli.check_pwned_password")
+def test_hibp_check_unexpected_error(mock_check: Mock, runner: CliRunner) -> None:
+    mock_check.side_effect = ValueError("Unexpected error")
+
+    result = runner.invoke(
+        cli,
+        ["hibp-check"],
+        input="y\ntestpassword\n",
+    )
+
+    assert result.exit_code == 1
+    assert "An unexpected error occurred while checking the password." in result.output
+    mock_check.assert_called_once_with("testpassword")
+
+
+@patch("localpass.cli.check_pwned_password")
+def test_hibp_check_empty_password_then_success(
+    mock_check: Mock, runner: CliRunner
+) -> None:
+    mock_check.return_value = 0
+
+    result = runner.invoke(
+        cli,
+        ["hibp-check"],
+        input="y\n\n\ntestpassword\n",
+    )
+
+    assert result.exit_code == 0
+    assert "This password was not found in the HIBP breach database." in result.output
+    mock_check.assert_called_once_with("testpassword")
 
 
 def test_remove_entry_with_numeric_id_success(runner: CliRunner) -> None:
