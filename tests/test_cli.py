@@ -1114,7 +1114,9 @@ def test_hibp_check_unexpected_error(mock_check: Mock, runner: CliRunner) -> Non
 
 
 @patch("localpass.cli.check_pwned_password")
-def test_hibp_check_empty_password_then_success(mock_check: Mock, runner: CliRunner) -> None:
+def test_hibp_check_empty_password_then_success(
+    mock_check: Mock, runner: CliRunner
+) -> None:
     mock_check.return_value = 0
 
     result = runner.invoke(

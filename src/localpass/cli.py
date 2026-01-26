@@ -6,7 +6,11 @@ import requests  # type: ignore[import-untyped]
 from zxcvbn import zxcvbn
 
 from .hibp import check_pwned_password
-from .prompts import ERROR_EMPTY_FIELD, prompt_password_with_confirmation, prompt_required_field
+from .prompts import (
+    ERROR_EMPTY_FIELD,
+    prompt_password_with_confirmation,
+    prompt_required_field,
+)
 from .vault.models import EntryNotFoundError, Vault
 from .vault.repository import (
     CorruptedVaultError,
