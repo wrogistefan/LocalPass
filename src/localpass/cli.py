@@ -19,8 +19,7 @@ from .vault.repository import (
     IncorrectPasswordError,
 )
 from .vault.service import VaultService
-
-VERSION = "0.3.0"
+from .version import get_version
 
 ZXCVBN_LABELS = {
     0: "Very Weak",
@@ -47,11 +46,11 @@ def load_vault(
         vault = service.load_vault(path, password)
         return repo, service, vault
     except IncorrectPasswordError:
-        raise click.ClickException("Error: Incorrect master password.")
+        raise click.ClickException("Incorrect master password.")
     except CorruptedVaultError:
-        raise click.ClickException("Error: Vault file is corrupted or unreadable.")
+        raise click.ClickException("Vault file is corrupted or unreadable.")
     except ValueError as e:
-        raise click.ClickException(f"Error: {e}")
+        raise click.ClickException(str(e))
 
 
 def output_json(
@@ -71,14 +70,21 @@ def output_json(
 def _json_formatter(status: str, action: str, data: dict[str, Any]) -> str:
     """Format the JSON output."""
     import json
+    from datetime import date, datetime
+
+    class CustomEncoder(json.JSONEncoder):
+        def default(self, o: Any) -> str:
+            if isinstance(o, (datetime, date)):
+                return o.isoformat()
+            return super().default(o)
 
     output = {
         "status": status,
-        "version": VERSION,
+        "version": get_version(),
         "action": action,
         "data": data,
     }
-    return json.dumps(output, indent=2)
+    return json.dumps(output, indent=2, cls=CustomEncoder)
 
 
 def format_password_strength(score: int) -> str:
@@ -90,6 +96,8 @@ def print_error(ctx: click.Context, message: str, action: str) -> None:
     """Print error in the appropriate format (JSON or text)."""
     if ctx.obj.get("json", False):
         output_json(ctx, "error", action, {"message": message})
+        # Raise exception to ensure non-zero exit code
+        raise click.ClickException(message)
     else:
         raise click.ClickException(message)
 
@@ -113,6 +121,13 @@ def print_success(ctx: click.Context, action: str, data: dict[str, Any]) -> None
             click.echo(f"Entry removed: {entry_id}")
 
 
+def should_auto_confirm(ctx: click.Context) -> bool:
+    """Check if we should auto-confirm operations."""
+    yes_flag = ctx.obj.get("yes", False)
+    json_output = ctx.obj.get("json", False)
+    return json_output or yes_flag
+
+
 @click.group(invoke_without_command=True)
 @click.version_option()
 @click.option("--json", is_flag=True, help="Output results in JSON format.")
@@ -122,7 +137,7 @@ def cli(ctx: click.Context, json: bool) -> None:
     ctx.ensure_object(dict)
     ctx.obj["json"] = json
     if ctx.invoked_subcommand is None:
-        version = importlib.metadata.version("localpass")
+        version = get_version()
         if json:
             output_json(
                 ctx,
@@ -136,13 +151,15 @@ def cli(ctx: click.Context, json: bool) -> None:
 
 @cli.command()
 @click.argument("path", type=click.Path())
+@click.option("--yes/--no-yes", "-y", "yes_flag", default=False, help="Skip all confirmations.")
 @click.pass_context
-def init(ctx: click.Context, path: str) -> None:
+def init(ctx: click.Context, path: str, yes_flag: bool) -> None:
     """Initialize a new vault at PATH."""
     json_output = ctx.obj.get("json", False)
+    auto_confirm = should_auto_confirm(ctx)
     path_obj = Path(path)
     if path_obj.exists():
-        if not json_output:
+        if not auto_confirm:
             if not click.confirm(f"File {path} already exists. Overwrite?"):
                 click.echo("Aborted.")
                 return
@@ -152,12 +169,14 @@ def init(ctx: click.Context, path: str) -> None:
                 return
 
     while True:
+        if json_output:
+            print_error(ctx, "Master password is required but cannot be prompted in JSON mode.", "init")
         password = click.prompt("Enter new master password", hide_input=True)
         if not password.strip():
             if json_output:
                 print_error(ctx, "This field cannot be empty.", "init")
             else:
-                click.echo("Error: This field cannot be empty.")
+                click.echo("This field cannot be empty.")
             continue
         result = zxcvbn(password)
         score = result["score"]
@@ -178,7 +197,7 @@ def init(ctx: click.Context, path: str) -> None:
                     click.echo(f"Suggestion: {suggestion}")
 
         if score < 3:
-            if not json_output:
+            if not auto_confirm:
                 if not click.confirm(
                     "Password is weak. Do you want to continue anyway?"
                 ):
@@ -193,12 +212,14 @@ def init(ctx: click.Context, path: str) -> None:
             # User chose to continue with weak password, accept it
             confirm = password
         else:
+            if json_output:
+                print_error(ctx, "Password confirmation is required but cannot be prompted in JSON mode.", "init")
             confirm = click.prompt("Confirm master password", hide_input=True)
             if password != confirm:
                 if json_output:
                     print_error(ctx, "Passwords do not match.", "init")
                 else:
-                    click.echo("Error: Passwords do not match. Please try again.")
+                    click.echo("Passwords do not match. Please try again.")
                 continue
         break
 
@@ -216,10 +237,12 @@ def init(ctx: click.Context, path: str) -> None:
 @cli.command()
 @click.argument("path", type=click.Path())
 @click.option("--id", "entry_id", help="Custom ID for the entry (optional)")
+@click.option("--yes/--no-yes", "-y", "yes_flag", default=False, help="Skip all confirmations.")
 @click.pass_context
-def add(ctx: click.Context, path: str, entry_id: str | None) -> None:
+def add(ctx: click.Context, path: str, entry_id: str | None, yes_flag: bool) -> None:
     """Add a new entry to the vault at PATH."""
     json_output = ctx.obj.get("json", False)
+    auto_confirm = should_auto_confirm(ctx)
     if entry_id == "":
         entry_id = None
     password = click.prompt("Enter master password", hide_input=True)
@@ -324,10 +347,12 @@ def show(ctx: click.Context, path: str, id: str, show_password: bool) -> None:
 @cli.command()
 @click.argument("path", type=click.Path())
 @click.argument("id")
+@click.option("--yes/--no-yes", "-y", "yes_flag", default=False, help="Skip all confirmations.")
 @click.pass_context
-def remove(ctx: click.Context, path: str, id: str) -> None:
+def remove(ctx: click.Context, path: str, id: str, yes_flag: bool) -> None:
     """Remove entry ID from the vault at PATH."""
     json_output = ctx.obj.get("json", False)
+    auto_confirm = should_auto_confirm(ctx)
     password = click.prompt("Enter master password", hide_input=True)
 
     repo, service, vault = load_vault(path, password)
@@ -349,10 +374,12 @@ def remove(ctx: click.Context, path: str, id: str) -> None:
 @cli.command()
 @click.argument("path", type=click.Path())
 @click.argument("id")
+@click.option("--yes/--no-yes", "-y", "yes_flag", default=False, help="Skip all confirmations.")
 @click.pass_context
-def edit(ctx: click.Context, path: str, id: str) -> None:
+def edit(ctx: click.Context, path: str, id: str, yes_flag: bool) -> None:
     """Edit entry fields in the vault at PATH."""
     json_output = ctx.obj.get("json", False)
+    auto_confirm = should_auto_confirm(ctx)
     password = click.prompt("Enter master password", hide_input=True)
 
     repo, service, vault = load_vault(path, password)
@@ -388,10 +415,12 @@ def edit(ctx: click.Context, path: str, id: str) -> None:
 
 
 @cli.command()
+@click.option("--yes/--no-yes", "-y", "yes_flag", default=False, help="Skip all confirmations.")
 @click.pass_context
-def hibp_check(ctx: click.Context) -> None:
+def hibp_check(ctx: click.Context, yes_flag: bool) -> None:
     """Check if a password appears in known data breaches using HIBP."""
     json_output = ctx.obj.get("json", False)
+    auto_confirm = should_auto_confirm(ctx)
     if not json_output:
         click.echo(
             "This command checks whether a password appears in known data breaches\n"
@@ -403,14 +432,15 @@ def hibp_check(ctx: click.Context) -> None:
             "This is an optional, manual check. LocalPass never performs network requests automatically."
         )
 
-    if not click.confirm(
-        "This action will query the HIBP API. Continue? [y/N]:", default=False
-    ):
-        if json_output:
-            output_json(ctx, "ok", "hibp_check", {"aborted": True})
-        else:
-            click.echo("Cancelled.")
-        return
+    if not auto_confirm:
+        if not click.confirm(
+            "This action will query the HIBP API. Continue? [y/N]:", default=False
+        ):
+            if json_output:
+                output_json(ctx, "ok", "hibp_check", {"aborted": True})
+            else:
+                click.echo("Cancelled.")
+            return
 
     while True:
         try:
