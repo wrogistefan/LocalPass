@@ -48,3 +48,21 @@ def mock_hibp_api_error() -> Generator[None, None, None]:
     with patch("localpass.hibp.requests.get") as mock_get:
         mock_get.side_effect = requests.RequestException("Network error")
         yield
+
+
+@pytest.fixture
+def mock_hibp_network_error() -> Generator[None, None, None]:
+    """Mock HIBP API to return a network error."""
+    import requests
+
+    with patch("localpass.hibp.requests.get") as mock_get:
+        mock_get.side_effect = requests.ConnectionError("Connection refused")
+        yield
+
+
+@pytest.fixture
+def mock_hibp_general_error() -> Generator[None, None, None]:
+    """Mock HIBP API to raise a general exception."""
+    with patch("localpass.hibp.requests.get") as mock_get:
+        mock_get.side_effect = Exception("Unexpected error")
+        yield

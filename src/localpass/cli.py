@@ -360,13 +360,37 @@ def show(ctx: click.Context, path: str, id: str, show_password: bool) -> None:
 @click.option(
     "--yes/--no-yes", "-y", "yes_flag", default=False, help="Skip all confirmations."
 )
+@click.option(
+    "--force/--no-force",
+    "-f",
+    "force_flag",
+    default=False,
+    help="Alias for --yes, skip all confirmations.",
+)
 @click.pass_context
-def remove(ctx: click.Context, path: str, id: str, yes_flag: bool) -> None:
+def remove(
+    ctx: click.Context, path: str, id: str, yes_flag: bool, force_flag: bool
+) -> None:
     """Remove entry ID from the vault at PATH."""
     json_output = ctx.obj.get("json", False)
+    # Store yes_flag in context for should_auto_confirm to work
+    ctx.obj["yes"] = yes_flag
+    auto_confirm = should_auto_confirm(ctx) or force_flag
     password = click.prompt("Enter master password", hide_input=True)
 
     repo, service, vault = load_vault(path, password)
+
+    # Check if entry exists before attempting removal
+    entry = vault.get_entry_by_id(id)
+    if entry is None:
+        print_error(ctx, f"Entry with ID '{id}' not found.", "remove")
+        return
+
+    # Ask for confirmation if not auto-confirmed
+    if not auto_confirm:
+        if not click.confirm(f"Are you sure you want to remove entry '{id}'?"):
+            click.echo("Cancelled.")
+            ctx.exit(1)
 
     try:
         vault.remove_entry_by_id(id)

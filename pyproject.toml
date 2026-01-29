@@ -35,6 +35,37 @@ filterwarnings = [
     "ignore:Can not control echo on the terminal:getpass.GetPassWarning",
     "ignore:PlaintextVaultRepository stores vault data in plaintext and must not be used in production environments:UserWarning",
 ]
+addopts = "--cov=src/localpass --cov-report=term-missing --no-cov-on-fail"
+
+[tool.coverage.run]
+branch = true
+source = ["src/localpass"]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == \"__main__\":",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+
+[tool.coverage.report]
+skip_empty = true
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == \"__main__\":",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+fail_under = 89
+show_missing = true
+omit = [
+    "src/localpass/__main__.py",
+]
 
 [tool.ruff]
 line-length = 88

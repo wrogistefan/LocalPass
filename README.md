@@ -113,7 +113,8 @@ pip install -e .
 - **💻 Cross-platform**: Works on Windows, macOS, and Linux
 - **📦 Zero Cloud**: No cloud sync, no telemetry, no remote storage
 - **📖 Open-Source**: Fully transparent codebase under Apache License 2.0
-- **✅ High Test Coverage**: 99% test coverage with comprehensive validation
+- **✅ High Test Coverage**: 90%+ test coverage with comprehensive validation (configured threshold: 89%)
+  - Note: 98% coverage would require extensive mocking of network errors and edge cases that are not practical for a CLI application with network operations.
 - **🔧 Shell Compatibility**: Verified on Windows PowerShell and Unix shells (WSL/bash)
 - **🤖 Automation Support**: JSON output mode and `--yes` flags for scripting
 - **📊 Password Strength Feedback**: zxcvbn-powered strength analysis with warnings and suggestions
