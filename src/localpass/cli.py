@@ -1,4 +1,3 @@
-import importlib.metadata
 from pathlib import Path
 from typing import Any
 
@@ -76,7 +75,7 @@ def _json_formatter(status: str, action: str, data: dict[str, Any]) -> str:
         def default(self, o: Any) -> str:
             if isinstance(o, (datetime, date)):
                 return o.isoformat()
-            return super().default(o)
+            return super().default(o)  # type: ignore[no-any-return]
 
     output = {
         "status": status,
@@ -125,7 +124,7 @@ def should_auto_confirm(ctx: click.Context) -> bool:
     """Check if we should auto-confirm operations."""
     yes_flag = ctx.obj.get("yes", False)
     json_output = ctx.obj.get("json", False)
-    return json_output or yes_flag
+    return bool(json_output or yes_flag)
 
 
 @click.group(invoke_without_command=True)
@@ -151,7 +150,9 @@ def cli(ctx: click.Context, json: bool) -> None:
 
 @cli.command()
 @click.argument("path", type=click.Path())
-@click.option("--yes/--no-yes", "-y", "yes_flag", default=False, help="Skip all confirmations.")
+@click.option(
+    "--yes/--no-yes", "-y", "yes_flag", default=False, help="Skip all confirmations."
+)
 @click.pass_context
 def init(ctx: click.Context, path: str, yes_flag: bool) -> None:
     """Initialize a new vault at PATH."""
@@ -170,7 +171,11 @@ def init(ctx: click.Context, path: str, yes_flag: bool) -> None:
 
     while True:
         if json_output:
-            print_error(ctx, "Master password is required but cannot be prompted in JSON mode.", "init")
+            print_error(
+                ctx,
+                "Master password is required but cannot be prompted in JSON mode.",
+                "init",
+            )
         password = click.prompt("Enter new master password", hide_input=True)
         if not password.strip():
             if json_output:
@@ -213,7 +218,11 @@ def init(ctx: click.Context, path: str, yes_flag: bool) -> None:
             confirm = password
         else:
             if json_output:
-                print_error(ctx, "Password confirmation is required but cannot be prompted in JSON mode.", "init")
+                print_error(
+                    ctx,
+                    "Password confirmation is required but cannot be prompted in JSON mode.",
+                    "init",
+                )
             confirm = click.prompt("Confirm master password", hide_input=True)
             if password != confirm:
                 if json_output:
@@ -237,12 +246,13 @@ def init(ctx: click.Context, path: str, yes_flag: bool) -> None:
 @cli.command()
 @click.argument("path", type=click.Path())
 @click.option("--id", "entry_id", help="Custom ID for the entry (optional)")
-@click.option("--yes/--no-yes", "-y", "yes_flag", default=False, help="Skip all confirmations.")
+@click.option(
+    "--yes/--no-yes", "-y", "yes_flag", default=False, help="Skip all confirmations."
+)
 @click.pass_context
 def add(ctx: click.Context, path: str, entry_id: str | None, yes_flag: bool) -> None:
     """Add a new entry to the vault at PATH."""
     json_output = ctx.obj.get("json", False)
-    auto_confirm = should_auto_confirm(ctx)
     if entry_id == "":
         entry_id = None
     password = click.prompt("Enter master password", hide_input=True)
@@ -347,12 +357,13 @@ def show(ctx: click.Context, path: str, id: str, show_password: bool) -> None:
 @cli.command()
 @click.argument("path", type=click.Path())
 @click.argument("id")
-@click.option("--yes/--no-yes", "-y", "yes_flag", default=False, help="Skip all confirmations.")
+@click.option(
+    "--yes/--no-yes", "-y", "yes_flag", default=False, help="Skip all confirmations."
+)
 @click.pass_context
 def remove(ctx: click.Context, path: str, id: str, yes_flag: bool) -> None:
     """Remove entry ID from the vault at PATH."""
     json_output = ctx.obj.get("json", False)
-    auto_confirm = should_auto_confirm(ctx)
     password = click.prompt("Enter master password", hide_input=True)
 
     repo, service, vault = load_vault(path, password)
@@ -374,12 +385,13 @@ def remove(ctx: click.Context, path: str, id: str, yes_flag: bool) -> None:
 @cli.command()
 @click.argument("path", type=click.Path())
 @click.argument("id")
-@click.option("--yes/--no-yes", "-y", "yes_flag", default=False, help="Skip all confirmations.")
+@click.option(
+    "--yes/--no-yes", "-y", "yes_flag", default=False, help="Skip all confirmations."
+)
 @click.pass_context
 def edit(ctx: click.Context, path: str, id: str, yes_flag: bool) -> None:
     """Edit entry fields in the vault at PATH."""
     json_output = ctx.obj.get("json", False)
-    auto_confirm = should_auto_confirm(ctx)
     password = click.prompt("Enter master password", hide_input=True)
 
     repo, service, vault = load_vault(path, password)
@@ -415,7 +427,9 @@ def edit(ctx: click.Context, path: str, id: str, yes_flag: bool) -> None:
 
 
 @cli.command()
-@click.option("--yes/--no-yes", "-y", "yes_flag", default=False, help="Skip all confirmations.")
+@click.option(
+    "--yes/--no-yes", "-y", "yes_flag", default=False, help="Skip all confirmations."
+)
 @click.pass_context
 def hibp_check(ctx: click.Context, yes_flag: bool) -> None:
     """Check if a password appears in known data breaches using HIBP."""

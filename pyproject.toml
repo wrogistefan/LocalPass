@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "localpass"
-version = "0.2.1"
+version = "0.3.0"
 description = "Local-first, offline password manager."
 authors = [{name = "Łukasz Perek, lukasz.perek@outlook.com"}]
 license = {text = "Apache-2.0"}

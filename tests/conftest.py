@@ -33,7 +33,9 @@ def mock_hibp_breached() -> Generator[None, None, None]:
     with patch("localpass.hibp.requests.get") as mock_get:
         mock_response = Mock()
         mock_response.raise_for_status.return_value = None
-        mock_response.text = "5BAA61E4C9B93F3F0682250B6CF8331B7EE68FD8:42\n"  # Match for 'password'
+        mock_response.text = (
+            "5BAA61E4C9B93F3F0682250B6CF8331B7EE68FD8:42\n"  # Match for 'password'
+        )
         mock_get.return_value = mock_response
         yield
 
@@ -41,7 +43,8 @@ def mock_hibp_breached() -> Generator[None, None, None]:
 @pytest.fixture
 def mock_hibp_api_error() -> Generator[None, None, None]:
     """Mock HIBP API to return an error."""
-    import requests
+    import requests  # type: ignore[import-untyped]
+
     with patch("localpass.hibp.requests.get") as mock_get:
         mock_get.side_effect = requests.RequestException("Network error")
         yield

@@ -2,7 +2,8 @@ import json
 import re
 import uuid
 from pathlib import Path
-from unittest.mock import Mock, patch
+from typing import Any
+from unittest.mock import Mock
 
 import pytest
 from click.testing import CliRunner
@@ -18,7 +19,7 @@ def _parse_entry_id(output: str) -> str | None:
     return None
 
 
-def _extract_json(output: str) -> dict | None:
+def _extract_json(output: str) -> dict[str, Any] | None:
     """Helper to extract JSON from command output that may contain prompts."""
     # Find JSON object starting with { and containing "status" or "action"
     # The JSON is indented with 2 spaces
@@ -28,7 +29,7 @@ def _extract_json(output: str) -> dict | None:
     if match:
         try:
             # Find the opening brace
-            brace_start = output.rfind('{', 0, match.start() + 1)
+            brace_start = output.rfind("{", 0, match.start() + 1)
             if brace_start == -1:
                 brace_start = match.start()
             # Use JSONDecoder to parse only the JSON object
@@ -225,7 +226,7 @@ def test_add_entry_with_custom_id(runner: CliRunner) -> None:
         result = runner.invoke(
             cli,
             ["add", test_vault, "--id", custom_id],
-            input=f"CorrectHorseBatteryStaple123!\nService1\nuser1\npass1\npass1\nnotes1\n",
+            input="CorrectHorseBatteryStaple123!\nService1\nuser1\npass1\npass1\nnotes1\n",
         )
 
         assert result.exit_code == 0
@@ -461,7 +462,9 @@ def test_hibp_check_safe_password(runner: CliRunner, mock_hibp_safe: Mock) -> No
         assert "not found" in result.output or "0" in result.output
 
 
-def test_hibp_check_breached_password(runner: CliRunner, mock_hibp_breached: Mock) -> None:
+def test_hibp_check_breached_password(
+    runner: CliRunner, mock_hibp_breached: Mock
+) -> None:
     """Test HIBP check with a password that has been breached."""
     with runner.isolated_filesystem():
         test_vault = "test_vault.json"
@@ -526,7 +529,7 @@ def test_help(runner: CliRunner) -> None:
 
 def test_init_json_success(runner: CliRunner) -> None:
     """Test init command with JSON output - success case.
-    
+
     Note: Init command requires interactive password prompts which are not
     compatible with JSON mode. This test verifies that JSON mode correctly
     returns an error when interactive prompts are needed.
@@ -571,7 +574,7 @@ def test_init_json_abort(runner: CliRunner) -> None:
         assert data is not None
         assert data["status"] == "ok"
         assert data["action"] == "init"
-        assert data["data"]["aborted"] == True
+        assert data["data"]["aborted"]
 
 
 def test_add_json_success(runner: CliRunner) -> None:
@@ -716,9 +719,6 @@ def test_wrong_password_json(runner: CliRunner) -> None:
         )
 
         assert result.exit_code != 0
-        data = _extract_json(result.output)
-        # The error may or may not contain JSON depending on implementation
-        # Either way, the exit code should be non-zero for wrong password
         assert result.exit_code != 0
 
 

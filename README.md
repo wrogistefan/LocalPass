@@ -40,6 +40,7 @@ If you want full control over your vault — LocalPass is built for you.
 ```bash
 localpass init myvault.lp
 # You'll be prompted to enter and confirm a master password
+# Password strength feedback is provided
 ```
 
 ### Add a new entry
@@ -74,6 +75,22 @@ localpass hibp-check
 # You'll be prompted to confirm the network request, then enter a password to check
 ```
 
+### Automation with JSON output
+
+LocalPass supports scripting and automation with JSON output mode:
+
+```bash
+# Get version in JSON format
+localpass --json
+# Output: {"status": "ok", "version": "0.3.0", "action": "version", "data": {...}}
+
+# Non-interactive initialization (use with caution)
+localpass init new_vault.lp --yes
+
+# List entries in JSON format
+localpass --json list myvault.lp
+```
+
 ## Installation
 
 ### Using pip
@@ -98,6 +115,8 @@ pip install -e .
 - **📖 Open-Source**: Fully transparent codebase under Apache License 2.0
 - **✅ High Test Coverage**: 99% test coverage with comprehensive validation
 - **🔧 Shell Compatibility**: Verified on Windows PowerShell and Unix shells (WSL/bash)
+- **🤖 Automation Support**: JSON output mode and `--yes` flags for scripting
+- **📊 Password Strength Feedback**: zxcvbn-powered strength analysis with warnings and suggestions
 
 ## Security Model
 
