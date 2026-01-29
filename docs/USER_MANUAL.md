@@ -4,11 +4,13 @@
 
 Welcome to LocalPass! This manual provides comprehensive instructions for using LocalPass, a local-first, offline password manager. Verified to work on Windows PowerShell and Unix shells (WSL/bash).
 
+LocalPass v0.3.0 introduces automation features including JSON output mode and non-interactive operation flags for scripting and CI/CD integration.
+
 ## 📥 Installation
 
 ### Prerequisites
 
-- Python 3.10 or higher
+- Python 3.11 or higher
 - pip (Python package manager)
 
 ### Installation Methods
@@ -29,7 +31,43 @@ pip install -e .
 
 ## 🚀 CLI Usage
 
-LocalPass provides a command-line interface with the following commands:
+LocalPass provides a command-line interface with the following global options and commands.
+
+### Global Options
+
+| Option | Description |
+|--------|-------------|
+| `--json` | Output results in JSON format for scripting |
+| `--version` | Show version information |
+| `--help` | Show help message |
+
+### `--json` Output Mode
+
+When `--json` is used, all output is formatted as JSON with the following structure:
+
+```json
+{
+  "status": "ok" | "error",
+  "version": "0.3.0",
+  "action": "command_name",
+  "data": { ... }
+}
+```
+
+**Important**: In JSON mode, password prompts cannot be displayed. Commands requiring passwords will fail in JSON mode unless combined with `--yes` flag.
+
+### `--yes` / `-y` Flag
+
+The `--yes` or `-y` flag skips all confirmation prompts:
+
+- Skips weak password confirmation during vault initialization
+- Skips overwrite confirmation when vault exists
+- Automatically confirms HIBP API requests
+- Auto-confirms in JSON mode (implicit behavior)
+
+Use with caution in scripts, especially for vault initialization.
+
+## 📦 Command Reference
 
 ### `localpass init <path>`
 
@@ -38,22 +76,51 @@ Initialize a new encrypted vault.
 **Usage:**
 ```bash
 localpass init myvault.lp
+localpass init myvault.lp --yes    # Skip all confirmations
+localpass init myvault.lp --json   # JSON output
 ```
 
 **Process:**
 1. You'll be prompted to enter a master password (cannot be empty)
-2. The password strength will be checked and feedback provided if too weak
-3. You'll be prompted to confirm the master password
-4. If passwords don't match, you'll be prompted to try again
-5. A new vault file will be created at the specified path
-6. The vault uses Argon2id + AES-GCM encryption
+2. Password strength is analyzed using zxcvbn
+3. You'll see strength label, warnings, and suggestions
+4. If password is weak, you'll be asked to confirm
+5. You'll be prompted to confirm the master password
+6. If passwords don't match, you'll be prompted to try again
+7. A new vault file will be created at the specified path
+8. The vault uses Argon2id + AES-GCM encryption
 
-**Example:**
+**Password Strength Labels:**
+- 0: Very Weak
+- 1: Weak
+- 2: Fair
+- 3: Strong
+- 4: Very Strong
+
+**Human-readable Example:**
 ```bash
 $ localpass init secure_vault.lp
 Enter new master password:
+Password strength: Fair
+Warning: Add another word or two
+Suggestion: Capitalization doesn't help much
+Suggestion: Add a few more words
+Password is weak. Do you want to continue anyway? [y/N]: y
 Confirm master password:
 Vault initialized successfully.
+```
+
+**JSON Output Example:**
+```bash
+$ localpass init new_vault.lp --yes --json
+{
+  "status": "ok",
+  "version": "0.3.0",
+  "action": "init",
+  "data": {
+    "path": "/path/to/new_vault.lp"
+  }
+}
 ```
 
 ### `localpass add <path>`
@@ -63,6 +130,9 @@ Add a new entry to an existing vault.
 **Usage:**
 ```bash
 localpass add myvault.lp
+localpass add myvault.lp --id 1    # Custom ID
+localpass add myvault.lp --yes     # Skip confirmations
+localpass add myvault.lp --json    # JSON output
 ```
 
 **Process:**
@@ -72,7 +142,7 @@ localpass add myvault.lp
 4. Optionally provide notes
 5. The entry will be added and assigned a unique ID (or custom ID if specified)
 
-**Example:**
+**Human-readable Example:**
 ```bash
 $ localpass add myvault.lp
 Enter master password:
@@ -84,16 +154,18 @@ Notes (optional): Personal account
 Entry added with ID: abc123
 ```
 
-**Custom ID Example:**
+**JSON Output Example:**
 ```bash
-$ localpass add myvault.lp --id 1
-Enter master password:
-Service: GitHub
-Username: myusername
-Enter password:
-Confirm password:
-Notes (optional): Personal account
-Entry added with ID: 1
+$ localpass add myvault.lp --json
+{
+  "status": "ok",
+  "version": "0.3.0",
+  "action": "add",
+  "data": {
+    "entry_id": "abc123",
+    "service": "GitHub"
+  }
+}
 ```
 
 ### `localpass list <path>`
@@ -103,19 +175,46 @@ List all entries in a vault.
 **Usage:**
 ```bash
 localpass list myvault.lp
+localpass list myvault.lp --json    # JSON output
 ```
 
 **Process:**
 1. Enter your master password to unlock the vault
-2. All entries will be displayed in a table format
+2. All entries will be displayed
 
-**Example:**
+**Human-readable Example:**
 ```bash
 $ localpass list myvault.lp
-Enter master password: 
+Enter master password:
 ID      Service     Username    Tags
-abc123  GitHub      myusername 
+abc123  GitHub      myusername
 def456  Email       contact@me.com
+```
+
+**JSON Output Example:**
+```bash
+$ localpass list myvault.lp --json
+{
+  "status": "ok",
+  "version": "0.3.0",
+  "action": "list",
+  "data": {
+    "entries": [
+      {
+        "id": "abc123",
+        "service": "GitHub",
+        "username": "myusername",
+        "tags": []
+      },
+      {
+        "id": "def456",
+        "service": "Email",
+        "username": "contact@me.com",
+        "tags": []
+      }
+    ]
+  }
+}
 ```
 
 ### `localpass show <path> <id>`
@@ -125,23 +224,102 @@ Show detailed information about a specific entry.
 **Usage:**
 ```bash
 localpass show myvault.lp abc123
+localpass show myvault.lp abc123 --show-password    # Reveal password
+localpass show myvault.lp abc123 --json             # JSON output
 ```
 
 **Process:**
 1. Enter your master password to unlock the vault
 2. Detailed information about the specified entry will be displayed
 
-**Example:**
+**Human-readable Example:**
 ```bash
 $ localpass show myvault.lp abc123
-Enter master password: 
+Enter master password:
 Service: GitHub
 Username: myusername
-Password: mysecretpassword
+Password: [hidden] (re-run with --show-password to display)
 Notes: Personal account
-Tags: 
+Tags:
 Created at: 2026-01-13 01:56:00
 Updated at: 2026-01-13 01:56:00
+```
+
+**JSON Output Example:**
+```bash
+$ localpass show myvault.lp abc123 --show-password --json
+{
+  "status": "ok",
+  "version": "0.3.0",
+  "action": "show",
+  "data": {
+    "id": "abc123",
+    "service": "GitHub",
+    "username": "myusername",
+    "password": "mysecretpassword",
+    "notes": "Personal account",
+    "tags": [],
+    "created_at": "2026-01-13T01:56:00",
+    "updated_at": "2026-01-13T01:56:00"
+  }
+}
+```
+
+**Error Response (JSON mode, missing entry):**
+```bash
+$ localpass show myvault.lp nonexistent --json
+{
+  "status": "error",
+  "version": "0.3.0",
+  "action": "show",
+  "data": {
+    "message": "Entry with ID 'nonexistent' not found."
+  }
+}
+```
+
+### `localpass edit <path> <id>`
+
+Edit entry fields in the vault.
+
+**Usage:**
+```bash
+localpass edit myvault.lp abc123
+localpass edit myvault.lp abc123 --yes    # Skip confirmations
+localpass edit myvault.lp abc123 --json   # JSON output
+```
+
+**Process:**
+1. Enter your master password to unlock the vault
+2. Current values are shown as defaults
+3. Press Enter to keep current value, or type new value
+4. Confirm if you want to change the password
+5. The entry will be updated
+
+**Human-readable Example:**
+```bash
+$ localpass edit myvault.lp abc123
+Enter master password:
+Service [GitHub]:
+Username [myusername]:
+Change password? [y/N]: y
+Enter new password:
+Confirm new password:
+Notes (optional) [Personal account]:
+Entry updated: abc123
+```
+
+**JSON Output Example:**
+```bash
+$ localpass edit myvault.lp abc123 --yes --json
+{
+  "status": "ok",
+  "version": "0.3.0",
+  "action": "edit",
+  "data": {
+    "entry_id": "abc123"
+  }
+}
 ```
 
 ### `localpass remove <path> <id>`
@@ -151,17 +329,32 @@ Remove an entry from a vault.
 **Usage:**
 ```bash
 localpass remove myvault.lp abc123
+localpass remove myvault.lp abc123 --yes    # Skip confirmation
+localpass remove myvault.lp abc123 --json   # JSON output
 ```
 
 **Process:**
 1. Enter your master password to unlock the vault
 2. The specified entry will be permanently removed
 
-**Example:**
+**Human-readable Example:**
 ```bash
 $ localpass remove myvault.lp abc123
-Enter master password: 
+Enter master password:
 Entry removed successfully.
+```
+
+**JSON Output Example:**
+```bash
+$ localpass remove myvault.lp abc123 --yes --json
+{
+  "status": "ok",
+  "version": "0.3.0",
+  "action": "remove",
+  "data": {
+    "entry_id": "abc123"
+  }
+}
 ```
 
 ### `localpass hibp-check`
@@ -171,6 +364,8 @@ Check if a password appears in known data breaches using the Have I Been Pwned (
 **Usage:**
 ```bash
 localpass hibp-check
+localpass hibp-check --yes    # Auto-confirm API request
+localpass hibp-check --json   # JSON output
 ```
 
 **Process:**
@@ -186,7 +381,7 @@ localpass hibp-check
 - Requires internet connection for the check
 - Graceful error handling for network failures or malformed responses
 
-**Example:**
+**Human-readable Example (not breached):**
 ```bash
 $ localpass hibp-check
 This command checks whether a password appears in known data breaches
@@ -197,10 +392,130 @@ The full password never leaves your device.
 
 This is an optional, manual check. LocalPass never performs network requests automatically.
 This action will query the HIBP API. Continue? [y/N]: y
-Enter password to check: 
+Enter password to check:
 This password was not found in the HIBP breach database.
 Absence from the database does not guarantee the password is safe.
 ```
+
+**Human-readable Example (breached):**
+```bash
+$ localpass hibp-check
+This action will query the HIBP API. Continue? [y/N]: y
+Enter password to check:
+⚠️  This password appears in known breaches: 12345 times.
+It is strongly recommended to choose a different password.
+```
+
+**JSON Output Example (success):**
+```bash
+$ localpass hibp-check --yes --json
+{
+  "status": "ok",
+  "version": "0.3.0",
+  "action": "hibp_check",
+  "data": {
+    "count": 12345,
+    "breached": true
+  }
+}
+```
+
+**JSON Output Example (not breached):**
+```bash
+$ localpass hibp-check --yes --json
+{
+  "status": "ok",
+  "version": "0.3.0",
+  "action": "hibp_check",
+  "data": {
+    "count": 0,
+    "breached": false
+  }
+}
+```
+
+**JSON Output Example (aborted):**
+```bash
+$ localpass hibp-check --json
+{
+  "status": "ok",
+  "version": "0.3.0",
+  "action": "hibp_check",
+  "data": {
+    "aborted": true
+  }
+}
+```
+
+**JSON Output Example (network error):**
+```bash
+$ localpass hibp-check --yes --json
+{
+  "status": "error",
+  "version": "0.3.0",
+  "action": "hibp_check",
+  "data": {
+    "message": "Network error: unable to reach the HIBP API."
+  }
+}
+```
+
+## 🤖 Automation
+
+LocalPass supports scripting and automation with JSON output and non-interactive flags.
+
+### Using `--json` for Scripting
+
+The `--json` flag outputs all results in machine-readable JSON format:
+
+```bash
+#!/bin/bash
+# Example: Check vault entries and process them
+
+entries=$(localpass list myvault.lp --json)
+echo "$entries" | jq -r '.data.entries[].service'
+```
+
+### Using `--yes` for Non-Interactive Mode
+
+The `--yes` or `-y` flag skips all confirmation prompts:
+
+```bash
+#!/bin/bash
+# Example: Create a vault non-interactively (use with caution)
+
+localpass init new_vault.lp --yes
+localpass add new_vault.lp --id 1 --yes
+```
+
+### Exit Code Behavior
+
+- Exit code 0: Success
+- Exit code 1: Error (invalid command, missing file, etc.)
+
+### Complete Automation Example
+
+```bash
+#!/bin/bash
+# Create a new vault and add entries non-interactively
+
+VAULT_PATH="automation_test.lp"
+MASTER_PASSWORD="testpassword123"
+
+# Initialize vault
+echo "$MASTER_PASSWORD" | localpass init "$VAULT_PATH" --yes
+
+# Add entries
+echo "$MASTER_PASSWORD" | localpass add "$VAULT_PATH" --id 1 --yes
+
+# List entries in JSON format
+localpass list "$VAULT_PATH" --json
+
+# Clean up
+rm "$VAULT_PATH"
+```
+
+**Note**: While this example shows automation capabilities, always use strong, unique master passwords in production.
 
 ## 🗃️ Vault File Format
 
@@ -263,7 +578,7 @@ LocalPass supports different repository implementations for vault storage:
 
 ### Wrong Password
 
-**Symptom:** `Error: Invalid password or corrupted vault`
+**Symptom:** `Incorrect master password.`
 
 **Solution:**
 1. Double-check your password
@@ -273,7 +588,7 @@ LocalPass supports different repository implementations for vault storage:
 
 ### Corrupted Vault
 
-**Symptom:** `Error: Invalid vault format` or `Error: Decryption failed`
+**Symptom:** `Vault file is corrupted or unreadable.`
 
 **Solution:**
 1. Restore from backup if available
@@ -283,7 +598,7 @@ LocalPass supports different repository implementations for vault storage:
 
 ### Missing File
 
-**Symptom:** `Error: File not found`
+**Symptom:** `Vault file not found`
 
 **Solution:**
 1. Check the file path is correct
@@ -300,6 +615,16 @@ LocalPass supports different repository implementations for vault storage:
 2. Try reinstalling: `pip install --force-reinstall localpass`
 3. Use the full path: `python -m localpass init myvault.lp`
 4. Restart your terminal or command prompt
+
+### JSON Mode Password Error
+
+**Symptom:** `Master password is required but cannot be prompted in JSON mode.`
+
+**Solution:**
+1. JSON mode cannot prompt for passwords
+2. Use a pipe or environment variable for password input
+3. Combine `--yes` with `--json` for full automation
+4. Example: `echo "$PASS" | localpass add vault.lp --json`
 
 ## ❔ FAQ
 

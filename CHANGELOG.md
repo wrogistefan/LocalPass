@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] – 2026‑01‑29
+
+### Added
+
+- **JSON output mode**: New `--json` global flag for machine-readable output
+  - Consistent JSON structure with `status`, `version`, `action`, and `data` fields
+  - Non-interactive behavior in JSON mode (cannot prompt for passwords)
+  - Enables scripting and automation use cases
+- **Non-interactive automation mode**: New `--yes` / `-y` flags for write operations
+  - Skips all confirmation prompts (weak password, overwrite, etc.)
+  - Automatically confirms operations when used with `--json`
+- **Password strength feedback improvements**:
+  - Uses zxcvbn library with labeled strength levels (Very Weak → Very Strong)
+  - Displays password strength warnings from zxcvbn analysis
+  - Shows improvement suggestions for weak passwords
+  - Prompts for confirmation when using weak passwords
+- **New HIBP JSON responses**: HIBP check results now include structured data
+  - `breached` boolean and `count` of breaches in JSON mode
+- **New confirmation messages**: Consistent confirmation prompts for write operations
+
+### Changed
+
+- **Unified error handling**: All errors now use `click.ClickException`
+  - Removed manual "Error:" prefixes - Click handles error formatting
+  - Consistent error format in both human and JSON modes
+- **Improved CLI output consistency**:
+  - Success messages follow consistent patterns across commands
+  - Confirmation prompts use consistent wording
+- **Python version requirement**: Now requires Python 3.11+ (was 3.10)
+
+### Fixed
+
+- **Inconsistent version reporting**: Version now correctly reflects pyproject.toml
+- **Double "Error:" prefix issues**: Errors no longer display redundant prefixes
+  - ClickException handles error formatting correctly
+
+### Notes
+
+This release adds extensive automation capabilities for scripting and CI/CD pipelines while maintaining the security-first offline philosophy. The JSON output and `--yes` flags enable programmatic vault management without user interaction.
+
+---
+
 ## [0.2.1] – 2026‑01‑26
 ### Fixed
 - Corrected the README *Tests* badge to reference the `ci.yml` workflow
@@ -115,6 +157,7 @@ This is the first stable and fully documented release of LocalPass, establishing
 - Edge cases in cryptographic operations
 - CLI argument parsing issues
 
+[0.3.0]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.3.0
 [0.2.1]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.2.1
 [0.2.0]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.2.0
 [0.1.3]: https://github.com/wrogistefan/LocalPass/releases/tag/v0.1.3
