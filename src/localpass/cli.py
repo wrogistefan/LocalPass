@@ -68,9 +68,7 @@ def output_json(
     )
 
 
-def _json_formatter(
-    status: str, action: str, data: dict[str, Any]
-) -> str:
+def _json_formatter(status: str, action: str, data: dict[str, Any]) -> str:
     """Format the JSON output."""
     import json
 
@@ -96,9 +94,7 @@ def print_error(ctx: click.Context, message: str, action: str) -> None:
         raise click.ClickException(message)
 
 
-def print_success(
-    ctx: click.Context, action: str, data: dict[str, Any]
-) -> None:
+def print_success(ctx: click.Context, action: str, data: dict[str, Any]) -> None:
     """Print success message in the appropriate format."""
     if ctx.obj.get("json", False):
         output_json(ctx, "ok", action, data)
@@ -454,4 +450,6 @@ def hibp_check(ctx: click.Context) -> None:
             click.echo("It is strongly recommended to choose a different password.")
         else:
             click.echo("This password was not found in the HIBP breach database.")
-            click.echo("Absence from the database does not guarantee the password is safe.")
+            click.echo(
+                "Absence from the database does not guarantee the password is safe."
+            )
