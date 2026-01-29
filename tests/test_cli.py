@@ -29,7 +29,7 @@ def _setup_vault_with_entry(
     add_result = runner.invoke(
         cli,
         ["add", vault_path],
-        input=f"{service}\n{username}\n{password}\n{password}\n{notes}\n",
+        input=f"CorrectHorseBatteryStaple123!\n{service}\n{username}\n{password}\n{password}\n{notes}\n",
     )
     assert add_result.exit_code == 0, f"Entry add failed: {add_result.output}"
 
@@ -51,7 +51,7 @@ def test_init_creates_file(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Vault initialized successfully." in result.output
+        assert "Vault initialized successfully at:" in result.output
         assert Path(test_vault).exists()
 
 
@@ -70,7 +70,7 @@ def test_init_overwrite_prompt(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Vault initialized successfully." in result.output
+        assert "Vault initialized successfully at:" in result.output
 
 
 def test_init_overwrite_abort(runner: CliRunner) -> None:
@@ -113,7 +113,7 @@ def test_add_entry(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Entry added with ID:" in result.output
+        assert "Entry added:" in result.output
 
 
 def test_add_entry_handles_value_error(runner: CliRunner) -> None:
@@ -193,7 +193,13 @@ def test_show_entry(runner: CliRunner) -> None:
         )
 
         # Extract the entry ID from the add result
-        entry_id = add_result.output.split("ID: ")[1].strip()
+        entry_id = None
+        for line in add_result.output.splitlines():
+            if "Entry added:" in line:
+                entry_id = line.split("Entry added:")[1].strip()
+                break
+
+        assert entry_id is not None, "Failed to parse entry ID from add command output"
 
         # Test show command
         result = runner.invoke(
@@ -226,8 +232,8 @@ def test_show_entry_with_password(runner: CliRunner) -> None:
 
         entry_id = None
         for line in add_result.output.splitlines():
-            if "ID: " in line:
-                entry_id = line.split("ID: ", 1)[1].strip()
+            if "Entry added:" in line:
+                entry_id = line.split("Entry added:")[1].strip()
                 break
 
         assert entry_id is not None, "Failed to parse entry ID from add command output"
@@ -286,7 +292,7 @@ def test_add_entry_password_confirmation_success(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Entry added with ID:" in result.output
+        assert "Entry added:" in result.output
 
 
 def test_add_entry_password_confirmation_retry(runner: CliRunner) -> None:
@@ -308,7 +314,7 @@ def test_add_entry_password_confirmation_retry(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Entry added with ID:" in result.output
+        assert "Entry added:" in result.output
         assert "Error: Passwords do not match. Please try again." in result.output
 
 
@@ -329,7 +335,13 @@ def test_remove_entry(runner: CliRunner) -> None:
         )
 
         # Extract the entry ID from the add result
-        entry_id = add_result.output.split("ID: ")[1].strip()
+        entry_id = None
+        for line in add_result.output.splitlines():
+            if "Entry added:" in line:
+                entry_id = line.split("Entry added:")[1].strip()
+                break
+
+        assert entry_id is not None, "Failed to parse entry ID from add command output"
 
         # Test remove command
         result = runner.invoke(
@@ -339,7 +351,7 @@ def test_remove_entry(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Entry removed successfully." in result.output
+        assert "Entry removed:" in result.output
 
         # Verify entry is actually removed
         list_result = runner.invoke(cli, ["list", test_vault], input="password\n")
@@ -363,7 +375,13 @@ def test_remove_entry_handles_value_error(runner: CliRunner) -> None:
         )
 
         # Extract the entry ID from the add result
-        entry_id = add_result.output.split("ID: ")[1].strip()
+        entry_id = None
+        for line in add_result.output.splitlines():
+            if "Entry added:" in line:
+                entry_id = line.split("Entry added:")[1].strip()
+                break
+
+        assert entry_id is not None, "Failed to parse entry ID from add command output"
 
         mock_repo = Mock()
         mock_service = Mock()
@@ -451,7 +469,7 @@ def test_init_empty_password_rejected(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Vault initialized successfully." in result.output
+        assert "Vault initialized successfully at:" in result.output
 
 
 def test_add_empty_service_rejected(runner: CliRunner) -> None:
@@ -465,7 +483,7 @@ def test_add_empty_service_rejected(runner: CliRunner) -> None:
             input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
         )
         assert init_result.exit_code == 0
-        assert "Vault initialized successfully." in init_result.output
+        assert "Vault initialized successfully at:" in init_result.output
 
         # Test add with empty service, then valid
         result = runner.invoke(
@@ -476,7 +494,7 @@ def test_add_empty_service_rejected(runner: CliRunner) -> None:
 
         assert result.exit_code == 0
         assert result.output.count("Service: ") == 2
-        assert "Entry added with ID:" in result.output
+        assert "Entry added:" in result.output
 
 
 def test_add_empty_username_rejected(runner: CliRunner) -> None:
@@ -490,7 +508,7 @@ def test_add_empty_username_rejected(runner: CliRunner) -> None:
             input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
         )
         assert init_result.exit_code == 0
-        assert "Vault initialized successfully." in init_result.output
+        assert "Vault initialized successfully at:" in init_result.output
 
         # Test add with empty username, then valid
         result = runner.invoke(
@@ -501,7 +519,7 @@ def test_add_empty_username_rejected(runner: CliRunner) -> None:
 
         assert result.exit_code == 0
         assert result.output.count("Username: ") == 2
-        assert "Entry added with ID:" in result.output
+        assert "Entry added:" in result.output
 
 
 def test_add_empty_password_rejected(runner: CliRunner) -> None:
@@ -515,7 +533,7 @@ def test_add_empty_password_rejected(runner: CliRunner) -> None:
             input="CorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
         )
         assert init_result.exit_code == 0
-        assert "Vault initialized successfully." in init_result.output
+        assert "Vault initialized successfully at:" in init_result.output
 
         # Test add with empty password, then valid
         result = runner.invoke(
@@ -526,7 +544,7 @@ def test_add_empty_password_rejected(runner: CliRunner) -> None:
 
         assert result.exit_code == 0
         assert result.output.count("Enter password: ") == 2
-        assert "Entry added with ID:" in result.output
+        assert "Entry added:" in result.output
 
 
 def test_init_password_confirmation_mismatch(runner: CliRunner) -> None:
@@ -690,7 +708,7 @@ def test_init_rejects_empty_password(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Vault initialized successfully." in result.output
+        assert "Vault initialized successfully at:" in result.output
         assert Path(test_vault).exists()
 
 
@@ -705,10 +723,8 @@ def test_init_rejects_whitespace_password(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert (
-            "Error: This field cannot be empty. Please enter a value." in result.output
-        )
-        assert "Vault initialized successfully." in result.output
+        assert "Error: This field cannot be empty." in result.output
+        assert "Vault initialized successfully at:" in result.output
         assert Path(test_vault).exists()
 
 
@@ -719,12 +735,12 @@ def test_init_rejects_weak_password(runner: CliRunner) -> None:
         result = runner.invoke(
             cli,
             ["init", test_vault],
-            input="123\nCorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+            input="123\ny\nCorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
         )
 
         assert result.exit_code == 0
-        assert "Error: Master password is too weak." in result.output
-        assert "Vault initialized successfully." in result.output
+        assert "Password strength:" in result.output
+        assert "Vault initialized successfully at:" in result.output
         assert Path(test_vault).exists()
 
 
@@ -735,14 +751,14 @@ def test_init_shows_feedback_for_weak_password(runner: CliRunner) -> None:
         result = runner.invoke(
             cli,
             ["init", test_vault],
-            input="password\nCorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
+            input="password\ny\nCorrectHorseBatteryStaple123!\nCorrectHorseBatteryStaple123!\n",
         )
 
         assert result.exit_code == 0
-        assert "Error: Master password is too weak." in result.output
+        assert "Password strength:" in result.output
         assert "Warning:" in result.output
         assert "Suggestion:" in result.output
-        assert "Vault initialized successfully." in result.output
+        assert "Vault initialized successfully at:" in result.output
         assert Path(test_vault).exists()
 
 
@@ -758,7 +774,7 @@ def test_init_accepts_strong_password(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Vault initialized successfully." in result.output
+        assert "Vault initialized successfully at:" in result.output
         assert Path(test_vault).exists()
 
 
@@ -811,7 +827,7 @@ def test_add_entry_assigns_numeric_id(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Entry added with ID: 1" in result.output
+        assert "Entry added: 1" in result.output
 
 
 def test_add_entry_with_custom_id(runner: CliRunner) -> None:
@@ -833,7 +849,7 @@ def test_add_entry_with_custom_id(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Entry added with ID: 1" in result.output
+        assert "Entry added: 1" in result.output
 
 
 def test_add_entry_with_empty_id(runner: CliRunner) -> None:
@@ -855,7 +871,7 @@ def test_add_entry_with_empty_id(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Entry added with ID:" in result.output
+        assert "Entry added:" in result.output
 
 
 def test_add_entry_with_conflicting_custom_id(runner: CliRunner) -> None:
@@ -907,7 +923,7 @@ def test_add_entry_with_custom_non_numeric_id(runner: CliRunner) -> None:
         )
 
         assert add_result.exit_code == 0
-        assert "Entry added with ID: abc" in add_result.output
+        assert "Entry added: abc" in add_result.output
 
         # Show the entry and verify it exists
         show_result = runner.invoke(
@@ -940,7 +956,7 @@ def test_add_entry_with_non_numeric_then_auto_id(runner: CliRunner) -> None:
         )
 
         assert custom_id_result.exit_code == 0
-        assert "Entry added with ID: abc" in custom_id_result.output
+        assert "Entry added: abc" in custom_id_result.output
 
         # Add another entry without specifying an ID to ensure next_id is still numeric (starting at 1)
         auto_id_result = runner.invoke(
@@ -950,7 +966,7 @@ def test_add_entry_with_non_numeric_then_auto_id(runner: CliRunner) -> None:
         )
 
         assert auto_id_result.exit_code == 0
-        assert "Entry added with ID: 1" in auto_id_result.output
+        assert "Entry added: 1" in auto_id_result.output
 
 
 def test_show_entry_with_numeric_id(runner: CliRunner) -> None:
@@ -1154,7 +1170,7 @@ def test_remove_entry_with_numeric_id_success(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Entry removed successfully." in result.output
+        assert "Entry removed:" in result.output
 
         # Confirm the entry is no longer shown
         show_result = runner.invoke(
@@ -1272,7 +1288,7 @@ def test_edit_entry(runner: CliRunner) -> None:
         )
 
         assert result.exit_code == 0
-        assert "Entry updated successfully." in result.output
+        assert "Entry updated:" in result.output
 
         # Verify the changes
         show_result = runner.invoke(
