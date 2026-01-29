@@ -159,6 +159,22 @@ The `Vault` class provides the core API for managing password entries:
 
 This API is designed for programmatic use and powers the LocalPass CLI.
 
+## 📰 In the media
+
+LocalPass was recently featured on **Korben.info**, one of the most respected French tech and privacy blogs.
+
+> *"LocalPass – a 100% offline password manager for the terminal.  
+> Zero cloud, zero telemetry, full data sovereignty."*  
+> — Korben.info
+
+The article captured the core idea behind the project perfectly:  
+a simple, local‑first tool that keeps your data entirely on your machine.
+
+LocalPass started as a small side project — something built mainly for personal use.  
+Thanks to this coverage, it has begun to grow beyond that, which is a huge motivation to keep improving it.
+
+🔗 Read the article: https://korben.info/localpass-gestionnaire-mots-de-passe-offline.html
+
 ## License
 
 This project is licensed under the Apache License 2.0.
