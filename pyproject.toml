@@ -11,10 +11,10 @@ license = {text = "Apache-2.0"}
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "cryptography",
-    "click>=8.0",
-    "zxcvbn",
-    "requests",
+    "cryptography>=45.0",
+    "click>=8.1",
+    "zxcvbn>=4.5",
+    "requests>=2.32",
 ]
 
 [project.scripts]
