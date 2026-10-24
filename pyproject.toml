@@ -4,17 +4,17 @@ build-backend = "hatchling.build"
 
 [project]
 name = "localpass"
-version = "0.3.0"
+version = "0.3.1"
 description = "Local-first, offline password manager."
 authors = [{name = "Łukasz Perek, lukasz.perek@outlook.com"}]
 license = {text = "Apache-2.0"}
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "cryptography",
-    "click>=8.0",
-    "zxcvbn",
-    "requests",
+    "cryptography>=45.0",
+    "click>=8.1",
+    "zxcvbn>=4.4",
+    "requests>=2.32",
 ]
 
 [project.scripts]

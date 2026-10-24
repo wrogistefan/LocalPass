@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] – 2026‑10‑24
+
+### Changed
+- Refreshed runtime dependency constraints
+- Updated dependency baselines for maintained packages
+- Improved compatibility with current Python tooling
+
+### Maintenance
+- Resolved Ruff findings across the codebase
+- Removed obsolete mypy ignore directives
+- Added documentation for intentional Ruff exceptions where required by application design
+
+### Notes
+- No user-facing feature changes
+- No vault format changes
+- No breaking CLI changes
+
 ## [0.3.0] – 2026‑01‑29
 
 ### Added

@@ -87,13 +87,14 @@ def test_encrypted_repository_decrypt_value_error(tmp_path: Path) -> None:
 
     repo.save(path, vault, "password123")
 
-    with patch(
-        "localpass.vault.repository.decrypt", side_effect=ValueError("Decrypt failed")
+    with (
+        patch(
+            "localpass.vault.repository.decrypt",
+            side_effect=ValueError("Decrypt failed"),
+        ),
+        pytest.raises(CorruptedVaultError, match="Decryption failed: Decrypt failed"),
     ):
-        with pytest.raises(
-            CorruptedVaultError, match="Decryption failed: Decrypt failed"
-        ):
-            repo.load(path, "password123")
+        repo.load(path, "password123")
 
 
 def test_encrypted_repository_decrypt_type_error(tmp_path: Path) -> None:
@@ -106,13 +107,14 @@ def test_encrypted_repository_decrypt_type_error(tmp_path: Path) -> None:
 
     repo.save(path, vault, "password123")
 
-    with patch(
-        "localpass.vault.repository.decrypt", side_effect=TypeError("Decrypt failed")
+    with (
+        patch(
+            "localpass.vault.repository.decrypt",
+            side_effect=TypeError("Decrypt failed"),
+        ),
+        pytest.raises(CorruptedVaultError, match="Decryption failed: Decrypt failed"),
     ):
-        with pytest.raises(
-            CorruptedVaultError, match="Decryption failed: Decrypt failed"
-        ):
-            repo.load(path, "password123")
+        repo.load(path, "password123")
 
 
 def test_encrypted_repository_decrypt_exception(tmp_path: Path) -> None:
@@ -125,14 +127,17 @@ def test_encrypted_repository_decrypt_exception(tmp_path: Path) -> None:
 
     repo.save(path, vault, "password123")
 
-    with patch(
-        "localpass.vault.repository.decrypt", side_effect=Exception("Decrypt failed")
-    ):
-        with pytest.raises(
+    with (
+        patch(
+            "localpass.vault.repository.decrypt",
+            side_effect=Exception("Decrypt failed"),
+        ),
+        pytest.raises(
             CorruptedVaultError,
             match="Decryption failed \\(unexpected error\\): Decrypt failed",
-        ):
-            repo.load(path, "password123")
+        ),
+    ):
+        repo.load(path, "password123")
 
 
 def test_plaintext_repository_save_load(tmp_path: Path) -> None:

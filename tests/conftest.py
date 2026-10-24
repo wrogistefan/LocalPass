@@ -1,4 +1,4 @@
-from typing import Generator
+from collections.abc import Generator
 from unittest.mock import Mock, patch
 
 import pytest
@@ -43,7 +43,7 @@ def mock_hibp_breached() -> Generator[None, None, None]:
 @pytest.fixture
 def mock_hibp_api_error() -> Generator[None, None, None]:
     """Mock HIBP API to return an error."""
-    import requests  # type: ignore[import-untyped]
+    import requests
 
     with patch("localpass.hibp.requests.get") as mock_get:
         mock_get.side_effect = requests.RequestException("Network error")
