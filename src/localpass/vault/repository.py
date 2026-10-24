@@ -15,13 +15,11 @@ from .vault_serialization import vault_from_dict, vault_to_dict
 class IncorrectPasswordError(ValueError):
     """Raised when the master password is incorrect."""
 
-    pass
 
 
 class CorruptedVaultError(ValueError):
     """Raised when the vault file is corrupted or unreadable."""
 
-    pass
 
 
 @runtime_checkable
@@ -129,7 +127,8 @@ class EncryptedVaultRepository:
             raise CorruptedVaultError(
                 f"Missing required field in encrypted vault data: {exc}"
             )
-        except Exception:
+        except Exception:  # noqa: BLE001
+            # Intentional catch-all when loading untrusted vault data.
             raise CorruptedVaultError("Vault file is corrupted or unreadable.")
 
         key = derive_key(master_password, salt)

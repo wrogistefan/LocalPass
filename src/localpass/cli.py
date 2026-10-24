@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Any
 
 import click
-import requests  # type: ignore[import-untyped]
+import requests  
 from zxcvbn import zxcvbn
 
 from .hibp import check_pwned_password
@@ -232,7 +232,7 @@ def init(ctx: click.Context, path: str, yes_flag: bool) -> None:
                 continue
         break
 
-    repo, service = get_vault_service()
+    _repo, service = get_vault_service()
     try:
         service.create_vault(path, password)
         if json_output:
@@ -287,7 +287,7 @@ def list(ctx: click.Context, path: str) -> None:
     json_output = ctx.obj.get("json", False)
     password = click.prompt("Enter master password", hide_input=True)
 
-    repo, service, vault = load_vault(path, password)
+    _repo, _service, vault = load_vault(path, password)
 
     entries = vault.list_entries()
     if json_output:
@@ -322,7 +322,7 @@ def show(ctx: click.Context, path: str, id: str, show_password: bool) -> None:
     json_output = ctx.obj.get("json", False)
     password = click.prompt("Enter master password", hide_input=True)
 
-    repo, service, vault = load_vault(path, password)
+    _repo, _service, vault = load_vault(path, password)
 
     entry = vault.get_entry_by_id(id)
     if entry is None:
@@ -378,7 +378,7 @@ def remove(
     auto_confirm = should_auto_confirm(ctx) or force_flag
     password = click.prompt("Enter master password", hide_input=True)
 
-    repo, service, vault = load_vault(path, password)
+    repo, _service, vault = load_vault(path, password)
 
     # Check if entry exists before attempting removal
     entry = vault.get_entry_by_id(id)
@@ -387,10 +387,9 @@ def remove(
         return
 
     # Ask for confirmation if not auto-confirmed
-    if not auto_confirm:
-        if not click.confirm(f"Are you sure you want to remove entry '{id}'?"):
-            click.echo("Cancelled.")
-            ctx.exit(1)
+    if not auto_confirm and not click.confirm(f"Are you sure you want to remove entry '{id}'?"):
+        click.echo("Cancelled.")
+        ctx.exit(1)
 
     try:
         vault.remove_entry_by_id(id)
@@ -470,15 +469,14 @@ def hibp_check(ctx: click.Context, yes_flag: bool) -> None:
             "This is an optional, manual check. LocalPass never performs network requests automatically."
         )
 
-    if not auto_confirm:
-        if not click.confirm(
-            "This action will query the HIBP API. Continue? [y/N]:", default=False
-        ):
-            if json_output:
-                output_json(ctx, "ok", "hibp_check", {"aborted": True})
-            else:
-                click.echo("Cancelled.")
-            return
+    if not auto_confirm and not click.confirm(
+        "This action will query the HIBP API. Continue? [y/N]:", default=False
+    ):
+        if json_output:
+            output_json(ctx, "ok", "hibp_check", {"aborted": True})
+        else:
+            click.echo("Cancelled.")
+        return
 
     while True:
         try:
@@ -501,8 +499,8 @@ def hibp_check(ctx: click.Context, yes_flag: bool) -> None:
     except requests.RequestException:
         print_error(ctx, "Network error: unable to reach the HIBP API.", "hibp_check")
         return
-    except Exception:
-        # Broad exception to catch any unexpected errors
+    except Exception:  # noqa: BLE001
+        # Intentional catch-all for CLI boundary.
         print_error(
             ctx,
             "An unexpected error occurred while checking the password.",

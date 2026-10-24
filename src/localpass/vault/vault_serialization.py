@@ -1,5 +1,5 @@
-from datetime import datetime, timezone
-from typing import Any, Dict
+from datetime import UTC, datetime
+from typing import Any
 
 from .models import Vault, VaultEntry, VaultMetadata
 
@@ -28,15 +28,15 @@ def _parse_iso8601(path: str, field_desc: str, value: str) -> datetime:
         ) from exc
     # Normalize to UTC
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    elif dt.tzinfo != timezone.utc:
+        dt = dt.replace(tzinfo=UTC)
+    elif dt.tzinfo != UTC:
         raise ValueError(
             f"Timestamp for {field_desc} in vault {path} must be in UTC timezone: {value}"
         )
     return dt
 
 
-def vault_to_dict(vault: Vault) -> Dict[str, Any]:
+def vault_to_dict(vault: Vault) -> dict[str, Any]:
     """Convert a Vault object to a dictionary for JSON serialization."""
     return {
         "metadata": {
@@ -61,7 +61,7 @@ def vault_to_dict(vault: Vault) -> Dict[str, Any]:
     }
 
 
-def vault_from_dict(data: Dict[str, Any], path: str = "<in-memory>") -> Vault:
+def vault_from_dict(data: dict[str, Any], path: str = "<in-memory>") -> Vault:
     """Convert a dictionary to a Vault object.
 
     Args:
@@ -91,7 +91,8 @@ def vault_from_dict(data: Dict[str, Any], path: str = "<in-memory>") -> Vault:
         for e in data["entries"]:
             tags = e.get("tags", [])
             if not isinstance(tags, list):
-                raise ValueError(
+                # Vault data validation error, ValueError is intentional.
+                raise ValueError(  # noqa: TRY004
                     f"Tags must be a list in entry {e.get('id', 'unknown')}"
                 )
             entry_created_at = _parse_iso8601(
@@ -131,8 +132,7 @@ def vault_from_dict(data: Dict[str, Any], path: str = "<in-memory>") -> Vault:
             next_id = _compute_next_id_from_entries(entries)
         else:
             # Enforce minimum of 1 in a single place
-            if next_id < 1:
-                next_id = 1
+            next_id = max(next_id, 1)
     else:
         # Backward compatibility: calculate next_id
         next_id = _compute_next_id_from_entries(entries)

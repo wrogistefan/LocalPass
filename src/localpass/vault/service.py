@@ -1,5 +1,4 @@
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from .models import EntryNotFoundError, Vault, VaultEntry, VaultMetadata
 from .repository import VaultRepository
@@ -23,8 +22,8 @@ class VaultService:
         service: str,
         username: str,
         password: str,
-        notes: Optional[str] = None,
-        entry_id: Optional[str] = None,
+        notes: str | None = None,
+        entry_id: str | None = None,
     ) -> VaultEntry:
         if entry_id and vault.get_entry_by_id(entry_id) is not None:
             raise ValueError(f"Entry with ID '{entry_id}' already exists.")
@@ -48,10 +47,10 @@ class VaultService:
         self,
         vault: Vault,
         entry_id: str,
-        service: Optional[str] = None,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        notes: Optional[str] = None,
+        service: str | None = None,
+        username: str | None = None,
+        password: str | None = None,
+        notes: str | None = None,
     ) -> VaultEntry:
         entry = vault.get_entry_by_id(entry_id)
         if entry is None:
@@ -64,6 +63,6 @@ class VaultService:
             entry.password = password
         if notes is not None:
             entry.notes = notes
-        entry.updated_at = datetime.now(timezone.utc)
-        vault.metadata.updated_at = datetime.now(timezone.utc)
+        entry.updated_at = datetime.now(UTC)
+        vault.metadata.updated_at = datetime.now(UTC)
         return entry

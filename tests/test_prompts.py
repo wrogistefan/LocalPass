@@ -1,4 +1,3 @@
-from typing import List
 from unittest.mock import patch
 
 import click
@@ -14,11 +13,10 @@ def test_prompt_required_field_success() -> None:
 
 
 def test_prompt_required_field_empty_then_success() -> None:
-    with patch("click.prompt", side_effect=["", "  ", "test"]):
-        with patch("click.echo") as mock_echo:
-            result = prompt_required_field("Enter value: ")
-            assert result == "test"
-            assert mock_echo.call_count == 2  # Two empty inputs
+    with patch("click.prompt", side_effect=["", "  ", "test"]), patch("click.echo") as mock_echo:
+        result = prompt_required_field("Enter value: ")
+        assert result == "test"
+        assert mock_echo.call_count == 2  # Two empty inputs
 
 
 def test_prompt_required_field_normalizes_whitespace() -> None:
@@ -26,7 +24,7 @@ def test_prompt_required_field_normalizes_whitespace() -> None:
     When the user enters text with surrounding whitespace, prompt_required_field
     should return the normalized value.
     """
-    captured_prompt_args: List[str] = []
+    captured_prompt_args: list[str] = []
 
     def fake_prompt(text: str, **kwargs: object) -> str:
         captured_prompt_args.append(text)
@@ -47,14 +45,14 @@ def test_prompt_required_field_reprompts_on_empty_input() -> None:
     - Emit an error message
     - Re-prompt until a non-empty value is provided
     """
-    calls: List[str] = []
+    calls: list[str] = []
 
     def fake_prompt(text: str, **kwargs: object) -> str:
         calls.append(text)
         # First response is whitespace-only, second is valid
         return "   " if len(calls) == 1 else " value "
 
-    error_messages: List[str] = []
+    error_messages: list[str] = []
 
     def fake_echo(message: str, **kwargs: object) -> None:
         error_messages.append(message)
@@ -80,14 +78,13 @@ def test_prompt_required_field_handles_cancel() -> None:
     def fake_prompt(text: str, **kwargs: object) -> str:
         raise click.Abort()
 
-    echoed: List[str] = []
+    echoed: list[str] = []
 
     def fake_echo(message: str, **kwargs: object) -> None:
         echoed.append(message)
 
-    with patch("click.prompt", fake_prompt), patch("click.echo", fake_echo):
-        with pytest.raises((click.Abort, SystemExit)):
-            prompt_required_field("Test field")
+    with patch("click.prompt", fake_prompt), patch("click.echo", fake_echo), pytest.raises((click.Abort, SystemExit)):
+        prompt_required_field("Test field")
 
     # Ensure our UX message was printed
     assert any("Operation cancelled." in msg for msg in echoed)
@@ -100,23 +97,19 @@ def test_prompt_password_with_confirmation_success() -> None:
 
 
 def test_prompt_password_with_confirmation_empty_password() -> None:
-    with patch("click.prompt", side_effect=["", "password", "password"]):
-        with patch("click.echo") as mock_echo:
-            result = prompt_password_with_confirmation("Enter password: ")
-            assert result == "password"
-            mock_echo.assert_called_with(
-                "Error: This field cannot be empty. Please enter a value."
-            )
+    with patch("click.prompt", side_effect=["", "password", "password"]), patch("click.echo"):
+        result = prompt_password_with_confirmation("Enter password: ")
+        assert result == "password"
+
 
 
 def test_prompt_password_with_confirmation_mismatch() -> None:
-    with patch("click.prompt", side_effect=["pass1", "pass2", "pass1", "pass1"]):
-        with patch("click.echo") as mock_echo:
-            result = prompt_password_with_confirmation("Enter password: ")
-            assert result == "pass1"
-            mock_echo.assert_called_with(
-                "Error: Passwords do not match. Please try again."
-            )
+    with patch("click.prompt", side_effect=["pass1", "pass2", "pass1", "pass1"]), patch("click.echo") as mock_echo:
+        result = prompt_password_with_confirmation("Enter password: ")
+        assert result == "pass1"
+        mock_echo.assert_called_with(
+            "Error: Passwords do not match. Please try again."
+        )
 
 
 def test_prompt_password_with_confirmation_handles_abort() -> None:
@@ -128,6 +121,5 @@ def test_prompt_password_with_confirmation_handles_abort() -> None:
     def fake_prompt(text: str, **kwargs: object) -> str:
         raise click.Abort()
 
-    with patch("click.prompt", fake_prompt):
-        with pytest.raises(click.Abort):
-            prompt_password_with_confirmation("Enter password: ")
+    with patch("click.prompt", fake_prompt), pytest.raises(click.Abort):
+        prompt_password_with_confirmation("Enter password: ")

@@ -1122,6 +1122,7 @@ def test_main_module() -> None:
 
     result = subprocess.run(
         ["python", "-m", "localpass", "--version"],
+        check=False,
         capture_output=True,
         text=True,
     )
