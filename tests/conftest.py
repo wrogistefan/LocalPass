@@ -43,7 +43,7 @@ def mock_hibp_breached() -> Generator[None, None, None]:
 @pytest.fixture
 def mock_hibp_api_error() -> Generator[None, None, None]:
     """Mock HIBP API to return an error."""
-    import requests  
+    import requests
 
     with patch("localpass.hibp.requests.get") as mock_get:
         mock_get.side_effect = requests.RequestException("Network error")

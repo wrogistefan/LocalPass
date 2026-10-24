@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Any
 
 import click
-import requests  
+import requests
 from zxcvbn import zxcvbn
 
 from .hibp import check_pwned_password
@@ -387,7 +387,9 @@ def remove(
         return
 
     # Ask for confirmation if not auto-confirmed
-    if not auto_confirm and not click.confirm(f"Are you sure you want to remove entry '{id}'?"):
+    if not auto_confirm and not click.confirm(
+        f"Are you sure you want to remove entry '{id}'?"
+    ):
         click.echo("Cancelled.")
         ctx.exit(1)
 

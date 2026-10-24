@@ -1,7 +1,7 @@
 import hashlib
 import importlib.metadata
 
-import requests  
+import requests
 
 
 def sha1_prefix(password: str) -> tuple[str, str]:

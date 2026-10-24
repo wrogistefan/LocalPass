@@ -6,7 +6,6 @@ class EntryNotFoundError(Exception):
     """Raised when a vault entry with the given ID does not exist."""
 
 
-
 @dataclass
 class VaultEntry:
     id: str
