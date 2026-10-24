@@ -4,7 +4,7 @@
 
 Welcome to LocalPass! This manual provides comprehensive instructions for using LocalPass, a local-first, offline password manager. Verified to work on Windows PowerShell and Unix shells (WSL/bash).
 
-LocalPass v0.3.0 introduces automation features including JSON output mode and non-interactive operation flags for scripting and CI/CD integration.
+LocalPass v0.3.1 introduces automation features including JSON output mode and non-interactive operation flags for scripting and CI/CD integration.
 
 ## 📥 Installation
 
@@ -48,7 +48,7 @@ When `--json` is used, all output is formatted as JSON with the following struct
 ```json
 {
   "status": "ok" | "error",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "action": "command_name",
   "data": { ... }
 }
@@ -115,7 +115,7 @@ Vault initialized successfully.
 $ localpass init new_vault.lp --yes --json
 {
   "status": "ok",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "action": "init",
   "data": {
     "path": "/path/to/new_vault.lp"
@@ -159,7 +159,7 @@ Entry added with ID: abc123
 $ localpass add myvault.lp --json
 {
   "status": "ok",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "action": "add",
   "data": {
     "entry_id": "abc123",
@@ -196,7 +196,7 @@ def456  Email       contact@me.com
 $ localpass list myvault.lp --json
 {
   "status": "ok",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "action": "list",
   "data": {
     "entries": [
@@ -250,7 +250,7 @@ Updated at: 2026-01-13 01:56:00
 $ localpass show myvault.lp abc123 --show-password --json
 {
   "status": "ok",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "action": "show",
   "data": {
     "id": "abc123",
@@ -270,7 +270,7 @@ $ localpass show myvault.lp abc123 --show-password --json
 $ localpass show myvault.lp nonexistent --json
 {
   "status": "error",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "action": "show",
   "data": {
     "message": "Entry with ID 'nonexistent' not found."
@@ -314,7 +314,7 @@ Entry updated: abc123
 $ localpass edit myvault.lp abc123 --yes --json
 {
   "status": "ok",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "action": "edit",
   "data": {
     "entry_id": "abc123"
@@ -349,7 +349,7 @@ Entry removed successfully.
 $ localpass remove myvault.lp abc123 --yes --json
 {
   "status": "ok",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "action": "remove",
   "data": {
     "entry_id": "abc123"
@@ -411,7 +411,7 @@ It is strongly recommended to choose a different password.
 $ localpass hibp-check --yes --json
 {
   "status": "ok",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "action": "hibp_check",
   "data": {
     "count": 12345,
@@ -425,7 +425,7 @@ $ localpass hibp-check --yes --json
 $ localpass hibp-check --yes --json
 {
   "status": "ok",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "action": "hibp_check",
   "data": {
     "count": 0,
@@ -439,7 +439,7 @@ $ localpass hibp-check --yes --json
 $ localpass hibp-check --json
 {
   "status": "ok",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "action": "hibp_check",
   "data": {
     "aborted": true
@@ -452,7 +452,7 @@ $ localpass hibp-check --json
 $ localpass hibp-check --yes --json
 {
   "status": "error",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "action": "hibp_check",
   "data": {
     "message": "Network error: unable to reach the HIBP API."

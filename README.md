@@ -82,7 +82,7 @@ LocalPass supports scripting and automation with JSON output mode:
 ```bash
 # Get version in JSON format
 localpass --json
-# Output: {"status": "ok", "version": "0.3.0", "action": "version", "data": {...}}
+# Output: {"status": "ok", "version": "0.3.1", "action": "version", "data": {...}}
 
 # Non-interactive initialization (use with caution)
 localpass init new_vault.lp --yes
