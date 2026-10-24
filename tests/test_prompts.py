@@ -13,7 +13,10 @@ def test_prompt_required_field_success() -> None:
 
 
 def test_prompt_required_field_empty_then_success() -> None:
-    with patch("click.prompt", side_effect=["", "  ", "test"]), patch("click.echo") as mock_echo:
+    with (
+        patch("click.prompt", side_effect=["", "  ", "test"]),
+        patch("click.echo") as mock_echo,
+    ):
         result = prompt_required_field("Enter value: ")
         assert result == "test"
         assert mock_echo.call_count == 2  # Two empty inputs
@@ -83,7 +86,11 @@ def test_prompt_required_field_handles_cancel() -> None:
     def fake_echo(message: str, **kwargs: object) -> None:
         echoed.append(message)
 
-    with patch("click.prompt", fake_prompt), patch("click.echo", fake_echo), pytest.raises((click.Abort, SystemExit)):
+    with (
+        patch("click.prompt", fake_prompt),
+        patch("click.echo", fake_echo),
+        pytest.raises((click.Abort, SystemExit)),
+    ):
         prompt_required_field("Test field")
 
     # Ensure our UX message was printed
@@ -97,19 +104,22 @@ def test_prompt_password_with_confirmation_success() -> None:
 
 
 def test_prompt_password_with_confirmation_empty_password() -> None:
-    with patch("click.prompt", side_effect=["", "password", "password"]), patch("click.echo"):
+    with (
+        patch("click.prompt", side_effect=["", "password", "password"]),
+        patch("click.echo"),
+    ):
         result = prompt_password_with_confirmation("Enter password: ")
         assert result == "password"
 
 
-
 def test_prompt_password_with_confirmation_mismatch() -> None:
-    with patch("click.prompt", side_effect=["pass1", "pass2", "pass1", "pass1"]), patch("click.echo") as mock_echo:
+    with (
+        patch("click.prompt", side_effect=["pass1", "pass2", "pass1", "pass1"]),
+        patch("click.echo") as mock_echo,
+    ):
         result = prompt_password_with_confirmation("Enter password: ")
         assert result == "pass1"
-        mock_echo.assert_called_with(
-            "Error: Passwords do not match. Please try again."
-        )
+        mock_echo.assert_called_with("Error: Passwords do not match. Please try again.")
 
 
 def test_prompt_password_with_confirmation_handles_abort() -> None:

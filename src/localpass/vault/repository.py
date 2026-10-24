@@ -16,10 +16,8 @@ class IncorrectPasswordError(ValueError):
     """Raised when the master password is incorrect."""
 
 
-
 class CorruptedVaultError(ValueError):
     """Raised when the vault file is corrupted or unreadable."""
-
 
 
 @runtime_checkable
